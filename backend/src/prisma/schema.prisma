@@ -1,0 +1,109 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name       String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  studies   Study[]
+
+  projects Project[]
+
+  applications Application[]
+
+  resumes Resume[]
+}
+
+model Study {
+  id         String   @id @default(uuid())
+
+  title      String
+  content    String
+
+  category   String
+
+  studyTime  Int
+
+  studyDate  DateTime
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  userId     String
+  user       User @relation(fields: [userId], references: [id])
+}
+
+model Project {
+  id          String   @id @default(uuid())
+
+  title       String
+  description String
+
+  githubUrl   String?
+  deployUrl   String?
+
+  techStack   String[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId      String
+  user        User @relation(fields: [userId], references: [id])
+}
+
+model Application {
+  id          String   @id @default(uuid())
+
+  companyName String
+  position    String
+
+  status      ApplicationStatus
+
+  appliedAt   DateTime
+
+  memo        String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId      String
+  user        User @relation(fields: [userId], references: [id])
+}
+
+enum ApplicationStatus {
+  APPLIED
+  DOCUMENT_PASS
+  INTERVIEW
+  FINAL_PASS
+  REJECTED
+}
+
+model Resume {
+  id         String   @id @default(uuid())
+
+  fileName   String
+  fileUrl    String
+
+  version    Int
+
+  createdAt  DateTime @default(now())
+
+  userId     String
+  user       User @relation(fields: [userId], references: [id])
+}
