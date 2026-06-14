@@ -6,5 +6,8 @@ const router = Router();
 
 router.post("/", authenticate, studyController.createStudy);
 router.get("/", authenticate, studyController.getStudies);
+router.get("/:id", authenticate, studyController.getStudyById);
+router.patch("/:id", authenticate, studyController.updateStudy);
+router.delete("/:id", authenticate, studyController.deleteStudy);
 
 export default router;
