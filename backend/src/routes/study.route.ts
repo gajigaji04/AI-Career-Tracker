@@ -1,10 +1,17 @@
 import { Router } from "express";
 import * as studyController from "../controllers/study.controller";
 import { authenticate } from "../middlewares/auth.middleware";
+import { validate } from "../middlewares/validate.middleware";
+import { createStudySchema } from "../validations/study.validation";
 
 const router = Router();
 
-router.post("/", authenticate, studyController.createStudy);
+router.post(
+  "/",
+  authenticate,
+  validate(createStudySchema),
+  studyController.createStudy,
+);
 router.get("/", authenticate, studyController.getStudies);
 router.get("/:id", authenticate, studyController.getStudyById);
 router.patch("/:id", authenticate, studyController.updateStudy);
