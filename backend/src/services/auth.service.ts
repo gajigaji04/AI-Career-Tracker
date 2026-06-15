@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { prisma } from "../prisma/prisma";
+import { AppError } from "../errors/AppError";
 
 interface RegisterDto {
   email: string;
@@ -33,13 +34,13 @@ export const login = async (email: string, password: string) => {
   });
 
   if (!user) {
-    throw new Error("사용자를 찾을 수 없습니다.");
+    throw new AppError("사용자를 찾을 수 없습니다.", 404);
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
-    throw new Error("비밀번호가 일치하지 않습니다.");
+    throw new AppError("비밀번호가 일치하지 않습니다.", 401);
   }
 
   const token = jwt.sign(
