@@ -1,14 +1,17 @@
 import { Response } from "express";
 import { AuthRequest } from "../middlewares/auth.middleware";
-import * as projectService from "../services/project.service";
+import * as applicationService from "../services/application.service";
 
-export const createProject = async (req: AuthRequest, res: Response) => {
+export const createApplication = async (req: AuthRequest, res: Response) => {
   try {
-    const project = await projectService.createProject(req.userId!, req.body);
+    const application = await applicationService.createApplication(
+      req.userId!,
+      req.body,
+    );
 
     res.status(201).json({
       success: true,
-      data: project,
+      data: application,
     });
   } catch (error) {
     res.status(400).json({
@@ -18,13 +21,13 @@ export const createProject = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const getProjects = async (req: AuthRequest, res: Response) => {
+export const getApplications = async (req: AuthRequest, res: Response) => {
   try {
-    const projects = await projectService.getProjects(req.userId!);
+    const applications = await applicationService.getApplications(req.userId!);
 
     res.status(200).json({
       success: true,
-      data: projects,
+      data: applications,
     });
   } catch (error) {
     res.status(400).json({
@@ -34,14 +37,17 @@ export const getProjects = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const getProjectById = async (req: AuthRequest, res: Response) => {
+export const getApplicationById = async (req: AuthRequest, res: Response) => {
   try {
     const id = req.params.id as string;
-    const project = await projectService.getProjectById(id, req.userId!);
+    const application = await applicationService.getApplicationById(
+      id,
+      req.userId!,
+    );
 
     res.status(200).json({
       success: true,
-      data: project,
+      data: application,
     });
   } catch (error) {
     res.status(404).json({
@@ -51,10 +57,10 @@ export const getProjectById = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const updateProject = async (req: AuthRequest, res: Response) => {
+export const updateApplication = async (req: AuthRequest, res: Response) => {
   try {
     const id = req.params.id as string;
-    const project = await projectService.updateProject(
+    const application = await applicationService.updateApplication(
       id,
       req.userId!,
       req.body,
@@ -62,7 +68,7 @@ export const updateProject = async (req: AuthRequest, res: Response) => {
 
     res.status(200).json({
       success: true,
-      data: project,
+      data: application,
     });
   } catch (error) {
     res.status(400).json({
@@ -72,10 +78,10 @@ export const updateProject = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const deleteProject = async (req: AuthRequest, res: Response) => {
+export const deleteApplication = async (req: AuthRequest, res: Response) => {
   try {
     const id = req.params.id as string;
-    await projectService.deleteProject(id, req.userId!);
+    await applicationService.deleteApplication(id, req.userId!);
 
     res.status(200).json({
       success: true,
