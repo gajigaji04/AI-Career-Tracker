@@ -8,6 +8,9 @@ import applicationRouter from "./routes/application.route";
 
 import { errorHandler } from "./middlewares/error.middleware";
 
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./config/swagger";
+
 const app = express();
 
 app.use(cors());
@@ -19,5 +22,6 @@ app.use("/projects", projectRouter);
 app.use("/applications", applicationRouter);
 
 app.use(errorHandler);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 export default app;
