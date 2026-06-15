@@ -1,4 +1,5 @@
 import { prisma } from "../prisma/prisma";
+import { AppError } from "../errors/AppError";
 
 interface CreateStudyDto {
   title: string;
@@ -38,7 +39,7 @@ export const getStudyById = async (id: string, userId: string) => {
   });
 
   if (!study) {
-    throw new Error("학습 기록을 찾을 수 없습니다.");
+    throw new AppError("학습 기록을 찾을 수 없습니다.", 404);
   }
 
   return study;
