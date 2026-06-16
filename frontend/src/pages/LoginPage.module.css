@@ -105,6 +105,18 @@
   box-shadow: 0 0 0 3px var(--accent-bg);
 }
 
+/* ── 에러 메시지 ── */
+.error {
+  font-size: 13px;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 0;
+  text-align: left;
+}
+
 /* ── 버튼 ── */
 .button {
   width: 100%;
@@ -128,6 +140,27 @@
 
 .button:active {
   transform: scale(0.98);
+}
+
+.button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── 로딩 스피너 ── */
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* ── 하단 안내 ── */

@@ -1,24 +1,28 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { login } from "../api/auth";
 import styles from "./LoginPage.module.css";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
     try {
       const data = await login(email, password);
-
-      console.log(data);
-
       localStorage.setItem("token", data.data.token);
-
-      alert("로그인 성공");
-    } catch (error) {
-      alert("로그인 실패");
+      navigate("/dashboard");
+    } catch {
+      setError("이메일 또는 비밀번호가 올바르지 않습니다.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -56,16 +60,18 @@ export default function LoginPage() {
             />
           </div>
 
-          <button type="submit" className={styles.button}>
-            로그인
+          {error && <p className={styles.error}>{error}</p>}
+
+          <button type="submit" className={styles.button} disabled={isLoading}>
+            {isLoading ? <span className={styles.spinner} /> : "로그인"}
           </button>
         </form>
 
         <p className={styles.footer}>
           아직 계정이 없으신가요?{" "}
-          <a href="/register" className={styles.link}>
+          <Link to="/register" className={styles.link}>
             회원가입
-          </a>
+          </Link>
         </p>
       </div>
     </div>
