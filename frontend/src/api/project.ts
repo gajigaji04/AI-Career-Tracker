@@ -8,8 +8,8 @@ export const getProjects = async () => {
 export const createProject = async (data: {
   title: string;
   description: string;
-  githubUrl?: string;
-  deployUrl?: string;
+  github_Url?: string;
+  deploy_Url?: string;
   techStack: string;
 }) => {
   const res = await api.post("/projects", data);
