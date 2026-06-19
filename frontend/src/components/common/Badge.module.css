@@ -1,0 +1,33 @@
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.applied {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.documentPass {
+  background: rgba(234, 179, 8, 0.1);
+  color: #ca8a04;
+}
+
+.interview {
+  background: rgba(249, 115, 22, 0.1);
+  color: #ea580c;
+}
+
+.finalPass {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+}
+
+.rejected {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
