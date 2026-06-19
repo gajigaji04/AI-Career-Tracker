@@ -8,8 +8,8 @@ export const getProjects = async () => {
 export const createProject = async (data: {
   title: string;
   description: string;
-  github_Url?: string;
-  deploy_Url?: string;
+  githubUrl?: string;
+  deployUrl?: string;
   techStack: string;
 }) => {
   const res = await api.post("/projects", data);
@@ -19,8 +19,8 @@ export const createProject = async (data: {
 export const updateProject = async (id: string, data: {
   title?: string;
   description?: string;
-  github_Url?: string;
-  deploy_Url?: string;
+  githubUrl?: string;
+  deployUrl?: string;
   techStack?: string;
 }) => {
   const res = await api.patch(`/projects/${id}`, data);

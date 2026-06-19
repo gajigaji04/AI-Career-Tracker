@@ -10,8 +10,8 @@ type Project = {
   id: string;
   title: string;
   description: string;
-  github_Url: string;
-  deploy_Url: string;
+  githubUrl: string;
+  deployUrl: string;
   techStack: string;
 };
 
@@ -41,8 +41,8 @@ export default function ProjectsPage() {
     setEditTitle(project.title);
     setEditDescription(project.description);
     setEditTechStack(project.techStack);
-    setEditGithubUrl(project.github_Url ?? "");
-    setEditDeployUrl(project.deploy_Url ?? "");
+    setEditGithubUrl(project.githubUrl ?? "");
+    setEditDeployUrl(project.deployUrl ?? "");
   };
 
   const cancelEdit = () => setEditingId(null);
@@ -55,8 +55,8 @@ export default function ProjectsPage() {
           title: editTitle,
           description: editDescription,
           techStack: editTechStack,
-          github_Url: editGithubUrl,
-          deploy_Url: editDeployUrl,
+          githubUrl: editGithubUrl,
+          deployUrl: editDeployUrl,
         },
       },
       { onSuccess: () => setEditingId(null) }
@@ -102,8 +102,8 @@ export default function ProjectsPage() {
                 title,
                 description,
                 techStack,
-                github_Url: githubUrl,
-                deploy_Url: deployUrl,
+                githubUrl: githubUrl,
+                deployUrl: deployUrl,
               },
               {
                 onSuccess: () => {
@@ -155,8 +155,8 @@ export default function ProjectsPage() {
             <li key={project.id}>
               <strong>{project.title}</strong> — {project.description}
               <span> [{project.techStack}]</span>
-              {project.github_Url && <span> | GitHub: {project.github_Url}</span>}
-              {project.deploy_Url && <span> | 배포: {project.deploy_Url}</span>}
+              {project.githubUrl && <span> | GitHub: {project.githubUrl}</span>}
+              {project.deployUrl && <span> | 배포: {project.deployUrl}</span>}
               <button onClick={() => startEdit(project)}>수정</button>
               <button onClick={() => deleteProject.mutate(project.id)}>삭제</button>
             </li>
