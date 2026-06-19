@@ -1,0 +1,40 @@
+.item {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.item:hover {
+  background: var(--accent-bg);
+}
+
+.company {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.position {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.memo {
+  font-size: 13px;
+  color: var(--text);
+  grid-column: 1 / -1;
+  padding-top: 4px;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+}
