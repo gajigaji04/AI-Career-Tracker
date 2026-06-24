@@ -1,0 +1,55 @@
+erDiagram
+    USER {
+        string id PK
+        string email
+        string password
+        string name
+        datetime createdAt
+        datetime updatedAt
+    }
+    STUDY {
+        string id PK
+        string userId FK
+        string title
+        string content
+        string category
+        int studyTime
+        datetime studyDate
+        datetime createdAt
+        datetime updatedAt
+    }
+    PROJECT {
+        string id PK
+        string userId FK
+        string title
+        string description
+        string githubUrl
+        string deployUrl
+        string techStack
+        datetime createdAt
+        datetime updatedAt
+    }
+    APPLICATION {
+        string id PK
+        string userId FK
+        string companyName
+        string position
+        string status
+        datetime appliedAt
+        string memo
+        datetime createdAt
+        datetime updatedAt
+    }
+    RESUME {
+        string id PK
+        string userId FK
+        string fileName
+        string fileUrl
+        int version
+        datetime createdAt
+    }
+
+    USER ||--o{ STUDY : "has"
+    USER ||--o{ PROJECT : "has"
+    USER ||--o{ APPLICATION : "has"
+    USER ||--o{ RESUME : "has"

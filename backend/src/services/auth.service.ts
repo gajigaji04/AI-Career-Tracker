@@ -9,6 +9,7 @@ interface RegisterDto {
   name: string;
 }
 
+// 토큰 만료 처리 구현하기 — Axios 인터셉터에서 401 받으면 자동 로그아웃. 지금 없음. 3~40줄짜리 작업인데 "인증 플로우 완성했다"고 말할 수 있음
 export const register = async ({ email, password, name }: RegisterDto) => {
   const existing = await prisma.user.findUnique({ where: { email } });
 

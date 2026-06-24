@@ -1,0 +1,28 @@
+graph TB
+    subgraph FE["Frontend"]
+        React["React 19 + TypeScript\nVite · React Query · Axios"]
+    end
+
+    subgraph BE["Backend"]
+        Express["Express 5 + TypeScript\nJWT · Zod · Swagger"]
+        Prisma["Prisma ORM"]
+    end
+
+    subgraph DB["Database"]
+        PG["PostgreSQL"]
+    end
+
+    subgraph AWS["AWS"]
+        EC2["EC2\nAPI Server"]
+        RDS["RDS\nPostgreSQL"]
+        S3["S3\nStatic Files"]
+    end
+
+    subgraph CICD["CI/CD"]
+        GH["GitHub Actions"]
+        Docker["Docker"]
+    end
+
+    React -->|"REST API · Bearer JWT"| Express
+    Express --> Prisma --> PG
+    GH --> Docker --> EC2

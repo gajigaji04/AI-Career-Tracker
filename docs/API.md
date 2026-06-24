@@ -1,5 +1,7 @@
 # API Specification
 
+![API](./images/api.png)
+
 ## Auth
 
 - POST /auth/register
