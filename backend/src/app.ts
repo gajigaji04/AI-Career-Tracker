@@ -6,6 +6,7 @@ import studyRouter from "./routes/study.route";
 import projectRouter from "./routes/project.route";
 import applicationRouter from "./routes/application.route";
 import dashboardRouter from "./routes/dashboard.route";
+import aiRouter from "./routes/ai.route";
 
 import { errorHandler } from "./middlewares/error.middleware";
 
@@ -22,6 +23,7 @@ app.use("/studies", studyRouter);
 app.use("/projects", projectRouter);
 app.use("/applications", applicationRouter);
 app.use("/dashboard", dashboardRouter);
+app.use("/ai", aiRouter);
 
 app.use(errorHandler);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
