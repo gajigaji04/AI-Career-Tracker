@@ -26,4 +26,16 @@ app.use("/dashboard", dashboardRouter);
 app.use(errorHandler);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+app.get("/", (req, res) => {
+  res.send(`
+    <h1>✅ 백엔드 실행 중</h1>
+    <p>
+      프론트엔드 접속:
+      <a href="http://localhost:5173/applications">
+        http://localhost:5173/applications
+      </a>
+    </p>
+  `);
+});
+
 export default app;
