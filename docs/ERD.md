@@ -1,5 +1,7 @@
 # ERD
 
+![ERD](./images/erd.png)
+
 ## Users
 
 사용자 정보

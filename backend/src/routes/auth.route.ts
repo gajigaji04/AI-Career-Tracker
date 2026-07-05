@@ -73,6 +73,31 @@ router.post("/login", authController.login);
 
 /**
  * @swagger
+ * /auth/refresh:
+ *   post:
+ *     summary: Access Token 재발급
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 새 Access Token 반환
+ *       401:
+ *         description: 유효하지 않은 리프레시 토큰
+ */
+router.post("/refresh", authController.refresh);
+
+/**
+ * @swagger
  * /auth/me:
  *   get:
  *     summary: 내 정보 조회

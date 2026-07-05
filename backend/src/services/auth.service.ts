@@ -27,11 +27,7 @@ export const register = async ({ email, password, name }: RegisterDto) => {
 };
 
 export const login = async (email: string, password: string) => {
-  const user = await prisma.user.findUnique({
-    where: {
-      email,
-    },
-  });
+  const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user) {
     throw new AppError("사용자를 찾을 수 없습니다.", 404);
@@ -43,18 +39,21 @@ export const login = async (email: string, password: string) => {
     throw new AppError("비밀번호가 일치하지 않습니다.", 401);
   }
 
-  const token = jwt.sign(
-    {
-      userId: user.id,
-    },
+  const accessToken = jwt.sign(
+    { userId: user.id },
     process.env.JWT_SECRET!,
-    {
-      expiresIn: "7d",
-    },
+    { expiresIn: "1h" },
+  );
+
+  const refreshToken = jwt.sign(
+    { userId: user.id },
+    process.env.JWT_REFRESH_SECRET!,
+    { expiresIn: "30d" },
   );
 
   return {
-    token,
+    accessToken,
+    refreshToken,
     user: {
       id: user.id,
       email: user.email,
@@ -63,11 +62,28 @@ export const login = async (email: string, password: string) => {
   };
 };
 
+export const refreshAccessToken = (refreshToken: string) => {
+  try {
+    const payload = jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_SECRET!,
+    ) as { userId: string };
+
+    const newAccessToken = jwt.sign(
+      { userId: payload.userId },
+      process.env.JWT_SECRET!,
+      { expiresIn: "1h" },
+    );
+
+    return { accessToken: newAccessToken };
+  } catch {
+    throw new AppError("유효하지 않은 리프레시 토큰입니다.", 401);
+  }
+};
+
 export const getMe = async (userId: string) => {
   const user = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
+    where: { id: userId },
     select: {
       id: true,
       email: true,

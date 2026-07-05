@@ -36,6 +36,32 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
+export const refresh = async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      res.status(400).json({
+        success: false,
+        message: "리프레시 토큰이 필요합니다.",
+      });
+      return;
+    }
+
+    const result = await authService.refreshAccessToken(refreshToken);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    res.status(401).json({
+      success: false,
+      message: error instanceof Error ? error.message : "Unknown Error",
+    });
+  }
+};
+
 export const getMe = async (req: AuthRequest, res: Response) => {
   try {
     const user = await authService.getMe(req.userId!);

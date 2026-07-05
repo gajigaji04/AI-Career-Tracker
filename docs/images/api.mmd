@@ -1,0 +1,35 @@
+graph LR
+    subgraph Auth["Auth /auth"]
+        A1["POST /register"]
+        A2["POST /login"]
+        A3["POST /refresh"]
+        A4["GET /me"]
+    end
+
+    subgraph Studies["Studies /studies"]
+        B1["GET /"]
+        B2["POST /"]
+        B3["GET /:id"]
+        B4["PATCH /:id"]
+        B5["DELETE /:id"]
+    end
+
+    subgraph Projects["Projects /projects"]
+        C1["GET /"]
+        C2["POST /"]
+        C3["GET /:id"]
+        C4["PATCH /:id"]
+        C5["DELETE /:id"]
+    end
+
+    subgraph Applications["Applications /applications"]
+        D1["GET /"]
+        D2["POST /"]
+        D3["GET /:id"]
+        D4["PATCH /:id"]
+        D5["DELETE /:id"]
+    end
+
+    subgraph Dashboard["Dashboard /dashboard"]
+        E1["GET /"]
+    end
