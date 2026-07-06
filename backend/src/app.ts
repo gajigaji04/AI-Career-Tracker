@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 import authRouter from "./routes/auth.route";
 import studyRouter from "./routes/study.route";
@@ -16,7 +17,8 @@ import { swaggerSpec } from "./config/swagger";
 
 const app = express();
 
-app.use(cors());
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(cookieParser());
 app.use(express.json());
 
 app.use("/auth", authRouter);

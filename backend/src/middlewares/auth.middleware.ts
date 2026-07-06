@@ -11,21 +11,12 @@ export const authenticate = (
   next: NextFunction,
 ) => {
   try {
-    const authHeader = req.headers.authorization;
+    const token = req.cookies.accessToken as string | undefined;
 
-    if (!authHeader) {
+    if (!token) {
       return res.status(401).json({
         success: false,
         message: "토큰이 없습니다.",
-      });
-    }
-
-    const [scheme, token] = authHeader.split(" ");
-
-    if (scheme !== "Bearer" || !token) {
-      return res.status(401).json({
-        success: false,
-        message: "토큰 형식이 올바르지 않습니다.",
       });
     }
 
@@ -36,7 +27,7 @@ export const authenticate = (
     req.userId = decoded.userId;
 
     next();
-  } catch (error) {
+  } catch {
     return res.status(401).json({
       success: false,
       message: "유효하지 않은 토큰입니다.",

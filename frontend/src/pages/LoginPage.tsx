@@ -1,5 +1,4 @@
 import { useState } from "react";
-import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { login } from "../api/auth";
 import styles from "./LoginPage.module.css";
@@ -11,15 +10,12 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setError("");
     setIsLoading(true);
 
     try {
-      const data = await login(email, password);
-      localStorage.setItem("token", data.data.accessToken);
-      localStorage.setItem("refreshToken", data.data.refreshToken);
+      await login(email, password);
       navigate("/dashboard");
     } catch {
       setError("이메일 또는 비밀번호가 올바르지 않습니다.");
@@ -37,7 +33,7 @@ export default function LoginPage() {
           <p className={styles.brandSub}>AI 커리어 관리 플랫폼</p>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={(e) => { e.preventDefault(); void handleSubmit(); }} className={styles.form}>
           <div className={styles.field}>
             <label className={styles.label}>이메일</label>
             <input
