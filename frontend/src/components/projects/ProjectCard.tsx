@@ -1,3 +1,6 @@
+import Button from "../common/Button";
+import styles from "./ProjectCard.module.css";
+
 type Project = {
   id: string;
   title: string;
@@ -14,15 +17,45 @@ type ProjectCardProps = {
 };
 
 export default function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
+  const tags = Array.isArray(project.techStack)
+    ? project.techStack
+    : project.techStack.split(",").map((s) => s.trim()).filter(Boolean);
+
   return (
-    <div>
-      <h3>{project.title}</h3>
-      <p>{project.description}</p>
-      <span>{Array.isArray(project.techStack) ? project.techStack.join(", ") : project.techStack}</span>
-      {project.githubUrl && <a href={project.githubUrl} target="_blank" rel="noreferrer">GitHub</a>}
-      {project.deployUrl && <a href={project.deployUrl} target="_blank" rel="noreferrer">배포</a>}
-      <button onClick={() => onEdit(project)}>수정</button>
-      <button onClick={() => onDelete(project.id)}>삭제</button>
+    <div className={styles.card}>
+      <h3 className={styles.title}>{project.title}</h3>
+      <p className={styles.desc}>{project.description}</p>
+      {tags.length > 0 && (
+        <div className={styles.stack}>
+          {tags.map((tag) => (
+            <span key={tag} className={styles.tag}>
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+      {(project.githubUrl || project.deployUrl) && (
+        <div className={styles.links}>
+          {project.githubUrl && (
+            <a className={styles.link} href={project.githubUrl} target="_blank" rel="noreferrer">
+              GitHub
+            </a>
+          )}
+          {project.deployUrl && (
+            <a className={styles.link} href={project.deployUrl} target="_blank" rel="noreferrer">
+              배포
+            </a>
+          )}
+        </div>
+      )}
+      <div className={styles.actions}>
+        <Button variant="secondary" onClick={() => onEdit(project)}>
+          수정
+        </Button>
+        <Button variant="danger" onClick={() => onDelete(project.id)}>
+          삭제
+        </Button>
+      </div>
     </div>
   );
 }

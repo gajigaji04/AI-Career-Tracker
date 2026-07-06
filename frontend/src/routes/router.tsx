@@ -6,6 +6,8 @@ import DashboardPage from "../pages/DashboardPage";
 import StudiesPage from "../pages/StudiesPage";
 import ProjectsPage from "../pages/ProjectsPage";
 import ApplicationsPage from "../pages/ApplicationsPage";
+import AIPage from "../pages/AIPage";
+import ResumePage from "../pages/ResumePage";
 
 export const router = createBrowserRouter([
   {
@@ -21,6 +23,8 @@ export const router = createBrowserRouter([
       { path: "studies", element: <StudiesPage /> },
       { path: "projects", element: <ProjectsPage /> },
       { path: "applications", element: <ApplicationsPage /> },
+      { path: "ai", element: <AIPage /> },
+      { path: "resumes", element: <ResumePage /> },
     ],
   },
 ]);

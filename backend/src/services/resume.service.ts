@@ -12,7 +12,8 @@ export const uploadResume = async (
     ? Math.max(...existing.map((r) => r.version)) + 1
     : 1;
 
-  const key = `resumes/${userId}/${Date.now()}-${file.originalname}`;
+  const originalName = Buffer.from(file.originalname, "latin1").toString("utf8");
+  const key = `resumes/${userId}/${Date.now()}-${originalName}`;
 
   await s3.send(
     new PutObjectCommand({
@@ -27,7 +28,7 @@ export const uploadResume = async (
 
   return prisma.resume.create({
     data: {
-      fileName: file.originalname,
+      fileName: originalName,
       fileUrl,
       version: nextVersion,
       userId,
