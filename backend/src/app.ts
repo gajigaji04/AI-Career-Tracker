@@ -17,7 +17,10 @@ import { swaggerSpec } from "./config/swagger";
 
 const app = express();
 
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGIN ?? "http://localhost:5173",
+  credentials: true,
+}));
 app.use(cookieParser());
 app.use(express.json());
 
@@ -32,7 +35,7 @@ app.use("/resumes", resumeRouter);
 app.use(errorHandler);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.get("/", (req, res) => {
+app.get("/", (_req, res) => {
   res.send(`
     <h1>✅ 백엔드 실행 중</h1>
     <p>

@@ -1,0 +1,21 @@
+services:
+  backend:
+    image: ${DOCKER_USERNAME}/ai-careerhub-backend:latest
+    env_file: .env
+    restart: unless-stopped
+    networks:
+      - app
+
+  frontend:
+    image: ${DOCKER_USERNAME}/ai-careerhub-frontend:latest
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - app
+
+networks:
+  app:
+    driver: bridge
