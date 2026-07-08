@@ -10,6 +10,15 @@
   gap: 12px;
 }
 
+.selectLabel {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin-bottom: 6px;
+  letter-spacing: 0.1px;
+}
+
 .select {
   width: 100%;
   padding: 10px 14px;

@@ -6,6 +6,8 @@ const NAV_ITEMS = [
   { to: "/studies", label: "Studies" },
   { to: "/projects", label: "Projects" },
   { to: "/applications", label: "Applications" },
+  { to: "/ai", label: "AI 도우미" },
+  { to: "/resumes", label: "이력서" },
 ];
 
 export default function Sidebar() {
