@@ -6,7 +6,10 @@ const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const MODEL = "llama-3.3-70b-versatile";
 
-export const generateCoverLetter = async (userId: string, applicationId: string) => {
+export const generateCoverLetter = async (
+  userId: string,
+  applicationId: string,
+) => {
   const application = await prisma.application.findFirst({
     where: { id: applicationId, userId },
   });
@@ -19,7 +22,10 @@ export const generateCoverLetter = async (userId: string, applicationId: string)
 
   const projectDesc = projects.length
     ? projects
-        .map((p) => `- ${p.title}: ${p.description} (기술스택: ${p.techStack.join(", ")})`)
+        .map(
+          (p: (typeof projects)[number]) =>
+            `- ${p.title}: ${p.description} (기술스택: ${p.techStack.join(", ")})`,
+        )
         .join("\n")
     : "등록된 프로젝트 없음";
 
@@ -47,14 +53,23 @@ ${projectDesc}
   });
 };
 
-export const generateInterviewQuestions = async (userId: string, applicationId: string) => {
+export const generateInterviewQuestions = async (
+  userId: string,
+  applicationId: string,
+) => {
   const application = await prisma.application.findFirst({
     where: { id: applicationId, userId },
   });
   if (!application) throw new AppError("지원 내역을 찾을 수 없습니다.", 404);
 
-  const projects = await prisma.project.findMany({ where: { userId }, take: 5 });
-  const techStacks = [...new Set(projects.flatMap((p) => p.techStack))];
+  const projects = await prisma.project.findMany({
+    where: { userId },
+    take: 5,
+  });
+
+  const techStacks = [
+    ...new Set(projects.flatMap((p: (typeof projects)[number]) => p.techStack)),
+  ];
 
   const prompt = `당신은 ${application.companyName}의 시니어 개발자 면접관입니다.
 ${application.position} 포지션 지원자를 위한 예상 면접 질문 7개와 각각의 모범 답변을 작성해주세요.
