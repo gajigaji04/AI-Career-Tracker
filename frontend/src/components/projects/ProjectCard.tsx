@@ -1,14 +1,6 @@
 import Button from "../common/Button";
 import styles from "./ProjectCard.module.css";
-
-type Project = {
-  id: string;
-  title: string;
-  description: string;
-  techStack: string | string[];
-  githubUrl?: string;
-  deployUrl?: string;
-};
+import type { Project } from "../../types/project";
 
 type ProjectCardProps = {
   project: Project;
@@ -16,10 +8,17 @@ type ProjectCardProps = {
   onDelete: (id: string) => void;
 };
 
-export default function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
+export default function ProjectCard({
+  project,
+  onEdit,
+  onDelete,
+}: ProjectCardProps) {
   const tags = Array.isArray(project.techStack)
     ? project.techStack
-    : project.techStack.split(",").map((s) => s.trim()).filter(Boolean);
+    : project.techStack
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
 
   return (
     <div className={styles.card}>
@@ -37,12 +36,22 @@ export default function ProjectCard({ project, onEdit, onDelete }: ProjectCardPr
       {(project.githubUrl || project.deployUrl) && (
         <div className={styles.links}>
           {project.githubUrl && (
-            <a className={styles.link} href={project.githubUrl} target="_blank" rel="noreferrer">
+            <a
+              className={styles.link}
+              href={project.githubUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
               GitHub
             </a>
           )}
           {project.deployUrl && (
-            <a className={styles.link} href={project.deployUrl} target="_blank" rel="noreferrer">
+            <a
+              className={styles.link}
+              href={project.deployUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
               배포
             </a>
           )}

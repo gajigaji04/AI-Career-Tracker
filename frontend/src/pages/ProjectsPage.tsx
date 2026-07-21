@@ -11,15 +11,7 @@ import Modal from "../components/common/Modal";
 import Button from "../components/common/Button";
 import EmptyState from "../components/common/EmptyState";
 import styles from "./ProjectsPage.module.css";
-
-type Project = {
-  id: string;
-  title: string;
-  description: string;
-  techStack: string;
-  githubUrl?: string;
-  deployUrl?: string;
-};
+import type { Project } from "../types/project";
 
 export default function ProjectsPage() {
   const { data, isLoading } = useProjects();
@@ -56,10 +48,16 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="프로젝트 추가">
+      <Modal
+        isOpen={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        title="프로젝트 추가"
+      >
         <ProjectForm
           onSubmit={(formData) => {
-            createProject.mutate(formData, { onSuccess: () => setIsAddOpen(false) });
+            createProject.mutate(formData, {
+              onSuccess: () => setIsAddOpen(false),
+            });
           }}
           onCancel={() => setIsAddOpen(false)}
         />
@@ -72,11 +70,21 @@ export default function ProjectsPage() {
       >
         {editingProject && (
           <ProjectForm
-            initialData={editingProject}
+            initialData={{
+              ...editingProject,
+              techStack: Array.isArray(editingProject.techStack)
+                ? editingProject.techStack.join(", ")
+                : editingProject.techStack,
+            }}
             onSubmit={(formData) => {
               updateProject.mutate(
-                { id: editingProject.id, data: formData },
-                { onSuccess: () => setEditingProject(null) },
+                {
+                  id: editingProject.id,
+                  data: formData,
+                },
+                {
+                  onSuccess: () => setEditingProject(null),
+                },
               );
             }}
             onCancel={() => setEditingProject(null)}

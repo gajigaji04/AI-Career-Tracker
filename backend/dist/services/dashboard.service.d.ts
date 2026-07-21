@@ -1,6 +1,6 @@
 export declare const getDashboardStats: (userId: string) => Promise<{
-    studies: number;
-    projects: number;
-    applications: number;
+    studies: any;
+    projects: any;
+    applications: any;
 }>;
 //# sourceMappingURL=dashboard.service.d.ts.map
