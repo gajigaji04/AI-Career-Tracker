@@ -11,15 +11,7 @@ import Modal from "../components/common/Modal";
 import Button from "../components/common/Button";
 import EmptyState from "../components/common/EmptyState";
 import styles from "./ProjectsPage.module.css";
-
-type Project = {
-  id: string;
-  title: string;
-  description: string;
-  techStack: string;
-  githubUrl?: string;
-  deployUrl?: string;
-};
+import type { Project } from "../api/project";
 
 export default function ProjectsPage() {
   const { data, isLoading } = useProjects();
@@ -72,7 +64,7 @@ export default function ProjectsPage() {
       >
         {editingProject && (
           <ProjectForm
-            initialData={editingProject}
+            initialData={{ ...editingProject, techStack: editingProject.techStack.join(", ") }}
             onSubmit={(formData) => {
               updateProject.mutate(
                 { id: editingProject.id, data: formData },

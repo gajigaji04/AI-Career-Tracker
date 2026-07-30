@@ -1,14 +1,6 @@
 import Button from "../common/Button";
 import styles from "./ProjectCard.module.css";
-
-type Project = {
-  id: string;
-  title: string;
-  description: string;
-  techStack: string | string[];
-  githubUrl?: string;
-  deployUrl?: string;
-};
+import type { Project } from "../../api/project";
 
 type ProjectCardProps = {
   project: Project;
@@ -17,9 +9,7 @@ type ProjectCardProps = {
 };
 
 export default function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
-  const tags = Array.isArray(project.techStack)
-    ? project.techStack
-    : project.techStack.split(",").map((s) => s.trim()).filter(Boolean);
+  const tags = project.techStack;
 
   return (
     <div className={styles.card}>
