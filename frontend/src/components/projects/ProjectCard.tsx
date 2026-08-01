@@ -1,6 +1,6 @@
 import Button from "../common/Button";
 import styles from "./ProjectCard.module.css";
-import type { Project } from "../../types/project";
+import type { Project } from "../../api/project";
 
 type ProjectCardProps = {
   project: Project;
@@ -13,12 +13,7 @@ export default function ProjectCard({
   onEdit,
   onDelete,
 }: ProjectCardProps) {
-  const tags = Array.isArray(project.techStack)
-    ? project.techStack
-    : project.techStack
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
+  const tags = project.techStack;
 
   return (
     <div className={styles.card}>

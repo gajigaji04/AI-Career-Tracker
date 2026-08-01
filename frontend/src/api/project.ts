@@ -1,7 +1,16 @@
 import { api } from "./axios";
 
+export type Project = {
+  id: string;
+  title: string;
+  description: string;
+  techStack: string[];
+  githubUrl?: string;
+  deployUrl?: string;
+};
+
 export const getProjects = async () => {
-  const res = await api.get("/projects");
+  const res = await api.get<{ success: boolean; data: Project[] }>("/projects");
   return res.data;
 };
 

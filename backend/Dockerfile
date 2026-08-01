@@ -1,11 +1,13 @@
 FROM node:20-alpine
 WORKDIR /app
 
+RUN apk add --no-cache python3 make g++
+
 COPY package*.json ./
+COPY src/prisma ./src/prisma
 RUN npm ci
 
 COPY . .
-RUN npx prisma generate --schema=src/prisma/schema.prisma
 RUN npm run build
 
 EXPOSE 3000
