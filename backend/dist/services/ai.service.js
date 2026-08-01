@@ -51,8 +51,13 @@ const generateInterviewQuestions = async (userId, applicationId) => {
     });
     if (!application)
         throw new AppError_1.AppError("지원 내역을 찾을 수 없습니다.", 404);
-    const projects = await prisma_1.prisma.project.findMany({ where: { userId }, take: 5 });
-    const techStacks = [...new Set(projects.flatMap((p) => p.techStack))];
+    const projects = await prisma_1.prisma.project.findMany({
+        where: { userId },
+        take: 5,
+    });
+    const techStacks = [
+        ...new Set(projects.flatMap((p) => p.techStack)),
+    ];
     const prompt = `당신은 ${application.companyName}의 시니어 개발자 면접관입니다.
 ${application.position} 포지션 지원자를 위한 예상 면접 질문 7개와 각각의 모범 답변을 작성해주세요.
 

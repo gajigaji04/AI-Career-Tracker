@@ -113,7 +113,8 @@ describe("AuthService", () => {
 
       // Assert
       expect(result).toEqual({
-        token: "fake.jwt.token",
+        accessToken: "fake.jwt.token",
+        refreshToken: "fake.jwt.token",
         user: {
           id: fakeUser.id,
           email: fakeUser.email,
@@ -124,6 +125,18 @@ describe("AuthService", () => {
       expect(mockBcrypt.compare).toHaveBeenCalledWith(
         "password123",
         fakeUser.password,
+      );
+
+      // access token, refresh token 각각 다른 secret으로 서명해야 함
+      expect(mockJwt.sign).toHaveBeenCalledWith(
+        { userId: fakeUser.id },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" },
+      );
+      expect(mockJwt.sign).toHaveBeenCalledWith(
+        { userId: fakeUser.id },
+        process.env.JWT_REFRESH_SECRET,
+        { expiresIn: "30d" },
       );
     });
 

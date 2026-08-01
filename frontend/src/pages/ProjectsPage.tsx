@@ -48,10 +48,16 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="프로젝트 추가">
+      <Modal
+        isOpen={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        title="프로젝트 추가"
+      >
         <ProjectForm
           onSubmit={(formData) => {
-            createProject.mutate(formData, { onSuccess: () => setIsAddOpen(false) });
+            createProject.mutate(formData, {
+              onSuccess: () => setIsAddOpen(false),
+            });
           }}
           onCancel={() => setIsAddOpen(false)}
         />
@@ -64,11 +70,19 @@ export default function ProjectsPage() {
       >
         {editingProject && (
           <ProjectForm
-            initialData={{ ...editingProject, techStack: editingProject.techStack.join(", ") }}
+            initialData={{
+              ...editingProject,
+              techStack: editingProject.techStack.join(", "),
+            }}
             onSubmit={(formData) => {
               updateProject.mutate(
-                { id: editingProject.id, data: formData },
-                { onSuccess: () => setEditingProject(null) },
+                {
+                  id: editingProject.id,
+                  data: formData,
+                },
+                {
+                  onSuccess: () => setEditingProject(null),
+                },
               );
             }}
             onCancel={() => setEditingProject(null)}

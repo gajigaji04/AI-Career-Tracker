@@ -8,7 +8,11 @@ type ProjectCardProps = {
   onDelete: (id: string) => void;
 };
 
-export default function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
+export default function ProjectCard({
+  project,
+  onEdit,
+  onDelete,
+}: ProjectCardProps) {
   const tags = project.techStack;
 
   return (
@@ -27,12 +31,22 @@ export default function ProjectCard({ project, onEdit, onDelete }: ProjectCardPr
       {(project.githubUrl || project.deployUrl) && (
         <div className={styles.links}>
           {project.githubUrl && (
-            <a className={styles.link} href={project.githubUrl} target="_blank" rel="noreferrer">
+            <a
+              className={styles.link}
+              href={project.githubUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
               GitHub
             </a>
           )}
           {project.deployUrl && (
-            <a className={styles.link} href={project.deployUrl} target="_blank" rel="noreferrer">
+            <a
+              className={styles.link}
+              href={project.deployUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
               배포
             </a>
           )}

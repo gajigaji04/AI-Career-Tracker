@@ -8,7 +8,8 @@ const AppError_1 = require("../errors/AppError");
 const uploadResume = async (userId, file) => {
     const existing = await prisma_1.prisma.resume.findMany({ where: { userId } });
     const nextVersion = existing.length > 0
-        ? Math.max(...existing.map((r) => r.version)) + 1
+        ? Math.max(...existing.map((r) => r.version)) +
+            1
         : 1;
     const originalName = Buffer.from(file.originalname, "latin1").toString("utf8");
     const key = `resumes/${userId}/${Date.now()}-${originalName}`;
