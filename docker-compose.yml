@@ -1,21 +1,18 @@
 services:
-  backend:
-    image: ${DOCKER_USERNAME}/ai-careerhub-backend:latest
-    env_file: .env
-    restart: unless-stopped
-    networks:
-      - app
-
   frontend:
     image: ${DOCKER_USERNAME}/ai-careerhub-frontend:latest
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      - certbot-www:/var/www/certbot
+      - certbot-certs:/etc/letsencrypt
     depends_on:
       - backend
     restart: unless-stopped
     networks:
       - app
 
-networks:
-  app:
-    driver: bridge
+volumes:
+  certbot-www:
+  certbot-certs:
