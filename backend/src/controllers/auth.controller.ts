@@ -17,65 +17,44 @@ const REFRESH_COOKIE_OPTS = {
 };
 
 export const register = async (req: Request, res: Response) => {
-  try {
-    const user = await authService.register(req.body);
+  const user = await authService.register(req.body);
 
-    res.status(201).json({
-      success: true,
-      data: user,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error instanceof Error ? error.message : "Unknown Error",
-    });
-  }
+  res.status(201).json({
+    success: true,
+    data: user,
+  });
 };
 
 export const login = async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
-    const { accessToken, refreshToken, user } = await authService.login(email, password);
+  const { accessToken, refreshToken, user } = await authService.login(email, password);
 
-    res.cookie("accessToken", accessToken, ACCESS_COOKIE_OPTS);
-    res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTS);
+  res.cookie("accessToken", accessToken, ACCESS_COOKIE_OPTS);
+  res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTS);
 
-    res.status(200).json({
-      success: true,
-      data: { user },
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error instanceof Error ? error.message : "Unknown Error",
-    });
-  }
+  res.status(200).json({
+    success: true,
+    data: { user },
+  });
 };
 
 export const refresh = async (req: Request, res: Response) => {
-  try {
-    const refreshToken = req.cookies.refreshToken as string | undefined;
+  const refreshToken = req.cookies.refreshToken as string | undefined;
 
-    if (!refreshToken) {
-      res.status(400).json({
-        success: false,
-        message: "리프레시 토큰이 없습니다.",
-      });
-      return;
-    }
-
-    const { accessToken } = authService.refreshAccessToken(refreshToken);
-
-    res.cookie("accessToken", accessToken, ACCESS_COOKIE_OPTS);
-
-    res.status(200).json({ success: true });
-  } catch (error) {
-    res.status(401).json({
+  if (!refreshToken) {
+    res.status(400).json({
       success: false,
-      message: error instanceof Error ? error.message : "Unknown Error",
+      message: "리프레시 토큰이 없습니다.",
     });
+    return;
   }
+
+  const { accessToken } = authService.refreshAccessToken(refreshToken);
+
+  res.cookie("accessToken", accessToken, ACCESS_COOKIE_OPTS);
+
+  res.status(200).json({ success: true });
 };
 
 export const logout = (_req: Request, res: Response) => {
@@ -85,17 +64,10 @@ export const logout = (_req: Request, res: Response) => {
 };
 
 export const getMe = async (req: AuthRequest, res: Response) => {
-  try {
-    const user = await authService.getMe(req.userId!);
+  const user = await authService.getMe(req.userId!);
 
-    res.status(200).json({
-      success: true,
-      data: user,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error instanceof Error ? error.message : "Unknown Error",
-    });
-  }
+  res.status(200).json({
+    success: true,
+    data: user,
+  });
 };

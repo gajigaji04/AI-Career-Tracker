@@ -2,6 +2,8 @@
 
 개발자 취업 준비 과정을 통합 관리하는 Career Management Platform
 
+🔗 **Live Demo**: https://aicareerhub-site.duckdns.org
+
 ## 프로젝트 소개
 
 CareerHub는 취업 준비생이 학습 기록, 프로젝트 경험, 지원 현황을 한 곳에서 관리할 수 있는 웹 서비스입니다.
@@ -43,14 +45,21 @@ CareerHub는 취업 준비생이 학습 기록, 프로젝트 경험, 지원 현�
 - AWS EC2
 - AWS RDS
 - AWS S3
+- Nginx (리버스 프록시)
+- Let's Encrypt (HTTPS)
 
 ### DevOps
 
 - Docker
-- GitHub Actions
+- GitHub Actions (CI/CD)
+
+### Testing
+
+- Vitest
 
 ## 프로젝트 문서
 
-- docs/ERD.md
-- docs/API.md
-- docs/ARCHITECTURE.md
+- [why.md](./why.md) — 이 프로젝트를 만든 이유와 주요 설계 결정
+- [docs/ERD.md](./docs/ERD.md)
+- [docs/API.md](./docs/API.md)
+- [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
