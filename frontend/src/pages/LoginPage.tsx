@@ -11,9 +11,9 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const justRegistered = Boolean(
-    (location.state as { registered?: boolean } | null)?.registered,
-  );
+  const state = location.state as { registered?: boolean; passwordReset?: boolean } | null;
+  const justRegistered = Boolean(state?.registered);
+  const justResetPassword = Boolean(state?.passwordReset);
 
   const handleSubmit = async () => {
     setError("");
@@ -40,6 +40,9 @@ export default function LoginPage() {
         {justRegistered && (
           <p className={styles.success}>회원가입이 완료됐습니다. 로그인해주세요.</p>
         )}
+        {justResetPassword && (
+          <p className={styles.success}>비밀번호가 재설정됐습니다. 새 비밀번호로 로그인해주세요.</p>
+        )}
 
         <form onSubmit={(e) => { e.preventDefault(); void handleSubmit(); }} className={styles.form}>
           <div className={styles.field}>
@@ -57,9 +60,9 @@ export default function LoginPage() {
           <div className={styles.field}>
             <div className={styles.labelRow}>
               <label className={styles.label}>비밀번호</label>
-              <span className={styles.forgotLink} title="준비 중인 기능입니다.">
+              <Link to="/forgot-password" className={styles.forgotLink}>
                 비밀번호 찾기
-              </span>
+              </Link>
             </div>
             <input
               type="password"

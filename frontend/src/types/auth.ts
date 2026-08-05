@@ -17,5 +17,6 @@ export interface RegisterRequest {
   nickname: string;
   jobTitle?: string;
   experienceLevel?: ExperienceLevel;
+  yearsOfExperience?: number;
   interestedStack?: string[];
 }
