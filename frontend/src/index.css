@@ -1,7 +1,9 @@
 :root {
   --text: #6b6375;
   --text-h: #08060d;
+  --text-muted: #9a93a3;
   --bg: #fff;
+  --surface: #ffffff;
   --border: #e5e4e7;
   --code-bg: #f4f3ec;
   --accent: #aa3bff;
@@ -10,6 +12,10 @@
   --social-bg: rgba(244, 243, 236, 0.5);
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -34,7 +40,9 @@
   :root {
     --text: #9ca3af;
     --text-h: #f3f4f6;
+    --text-muted: #6b7280;
     --bg: #16171d;
+    --surface: #1a1b23;
     --border: #2e303a;
     --code-bg: #1f2028;
     --accent: #c084fc;

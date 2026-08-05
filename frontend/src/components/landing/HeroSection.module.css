@@ -1,0 +1,147 @@
+.hero {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 96px 24px 64px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 480px);
+  gap: 56px;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 56px 20px 40px;
+    text-align: center;
+  }
+}
+
+.eyebrow {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  padding: 6px 14px;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 48px;
+  line-height: 122%;
+  letter-spacing: -1.2px;
+  margin: 0 0 20px;
+  color: var(--text-h);
+}
+
+@media (max-width: 900px) {
+  .title {
+    font-size: 34px;
+  }
+}
+
+.accent {
+  color: var(--accent);
+}
+
+.subtitle {
+  font-size: 16px;
+  line-height: 165%;
+  color: var(--text);
+  margin: 0 0 32px;
+  max-width: 520px;
+}
+
+@media (max-width: 900px) {
+  .subtitle {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.ctaRow {
+  display: flex;
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .ctaRow {
+    justify-content: center;
+  }
+}
+
+/* ── 대시보드 목업 ── */
+.mockupWrap {
+  display: flex;
+  justify-content: center;
+}
+
+.mockup {
+  width: 100%;
+  max-width: 420px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.mockupHeader {
+  display: flex;
+  gap: 6px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.mockupDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.mockupBody {
+  padding: 20px;
+}
+
+.statRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.statCard {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-bg);
+}
+
+.statLabel {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.statValue {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 100px;
+}
+
+.bar {
+  flex: 1;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, var(--accent), var(--accent-border));
+}

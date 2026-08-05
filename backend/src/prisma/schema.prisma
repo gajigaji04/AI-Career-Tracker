@@ -12,11 +12,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ExperienceLevel {
+  STUDENT
+  JOB_SEEKER
+  NEW_DEVELOPER
+  JUNIOR_DEVELOPER
+  EXPERIENCED_DEVELOPER
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
   password  String
   name       String
+  nickname   String
+
+  jobTitle        String?
+  experienceLevel ExperienceLevel?
+  interestedStack String[]          @default([])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

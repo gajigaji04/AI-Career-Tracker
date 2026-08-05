@@ -1,6 +1,8 @@
 import { Router } from "express";
 import * as authController from "../controllers/auth.controller";
 import { authenticate } from "../middlewares/auth.middleware";
+import { validate } from "../middlewares/validate.middleware";
+import { registerSchema } from "../validations/auth.validation";
 
 const router = Router();
 
@@ -39,7 +41,7 @@ const router = Router();
  *       400:
  *         description: 잘못된 요청
  */
-router.post("/register", authController.register);
+router.post("/register", validate(registerSchema), authController.register);
 
 /**
  * @swagger
