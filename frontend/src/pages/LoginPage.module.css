@@ -62,8 +62,12 @@
 
 .forgotLink {
   font-size: 12px;
-  color: var(--text-muted);
-  cursor: not-allowed;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.forgotLink:hover {
+  text-decoration: underline;
 }
 
 .input {

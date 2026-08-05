@@ -2,7 +2,11 @@ import { Router } from "express";
 import * as authController from "../controllers/auth.controller";
 import { authenticate } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validate.middleware";
-import { registerSchema } from "../validations/auth.validation";
+import {
+  registerSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from "../validations/auth.validation";
 
 const router = Router();
 
@@ -115,5 +119,64 @@ router.post("/logout", authController.logout);
  *         description: 인증 필요
  */
 router.get("/me", authenticate, authController.getMe);
+
+/**
+ * @swagger
+ * /auth/forgot-password:
+ *   post:
+ *     summary: 비밀번호 재설정 이메일 발송
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 이메일 발송 요청 처리됨 (계정 존재 여부와 무관하게 항상 200)
+ */
+router.post(
+  "/forgot-password",
+  validate(forgotPasswordSchema),
+  authController.forgotPassword,
+);
+
+/**
+ * @swagger
+ * /auth/reset-password:
+ *   post:
+ *     summary: 토큰으로 비밀번호 재설정
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *               - password
+ *             properties:
+ *               token:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 비밀번호 재설정 성공
+ *       400:
+ *         description: 유효하지 않거나 만료된 토큰
+ */
+router.post(
+  "/reset-password",
+  validate(resetPasswordSchema),
+  authController.resetPassword,
+);
 
 export default router;

@@ -88,6 +88,7 @@ describe("AuthService", () => {
           nickname: registerDto.nickname,
           jobTitle: null,
           experienceLevel: null,
+          yearsOfExperience: null,
           interestedStack: [],
         },
         select: { id: true, email: true, name: true, nickname: true },

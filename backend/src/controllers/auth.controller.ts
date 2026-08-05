@@ -63,6 +63,21 @@ export const logout = (_req: Request, res: Response) => {
   res.status(200).json({ success: true });
 };
 
+export const forgotPassword = async (req: Request, res: Response) => {
+  await authService.requestPasswordReset(req.body.email as string);
+
+  res.status(200).json({
+    success: true,
+    message: "입력하신 이메일이 가입되어 있다면, 비밀번호 재설정 링크를 발송했습니다.",
+  });
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  await authService.resetPassword(req.body.token as string, req.body.password as string);
+
+  res.status(200).json({ success: true, message: "비밀번호가 재설정되었습니다." });
+};
+
 export const getMe = async (req: AuthRequest, res: Response) => {
   const user = await authService.getMe(req.userId!);
 

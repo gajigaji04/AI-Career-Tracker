@@ -1,8 +1,13 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
+import { Resend } from "resend";
 import { prisma } from "../prisma/prisma";
 import { AppError } from "../errors/AppError";
 import type { ExperienceLevel } from "@prisma/client";
+
+const getResendClient = () => new Resend(process.env.RESEND_API_KEY);
+const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
 
 interface RegisterDto {
   email: string;
@@ -11,6 +16,7 @@ interface RegisterDto {
   nickname: string;
   jobTitle?: string;
   experienceLevel?: ExperienceLevel;
+  yearsOfExperience?: number;
   interestedStack?: string[];
 }
 
@@ -21,6 +27,7 @@ export const register = async ({
   nickname,
   jobTitle,
   experienceLevel,
+  yearsOfExperience,
   interestedStack,
 }: RegisterDto) => {
   const existing = await prisma.user.findUnique({ where: { email } });
@@ -39,6 +46,7 @@ export const register = async ({
       nickname,
       jobTitle: jobTitle ?? null,
       experienceLevel: experienceLevel ?? null,
+      yearsOfExperience: yearsOfExperience ?? null,
       interestedStack: interestedStack ?? [],
     },
     select: { id: true, email: true, name: true, nickname: true },
@@ -100,6 +108,56 @@ export const refreshAccessToken = (refreshToken: string) => {
   } catch {
     throw new AppError("유효하지 않은 리프레시 토큰입니다.", 401);
   }
+};
+
+export const requestPasswordReset = async (email: string) => {
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  // 계정 존재 여부와 무관하게 항상 같은 방식으로 동작 (이메일 존재 여부 노출 방지)
+  if (!user) return;
+
+  const token = crypto.randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MS);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordResetToken: token, passwordResetTokenExpiresAt: expiresAt },
+  });
+
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+
+  const { error } = await getResendClient().emails.send({
+    from: process.env.RESEND_FROM_EMAIL ?? "CareerHub <onboarding@resend.dev>",
+    to: email,
+    subject: "[CareerHub] 비밀번호 재설정 안내",
+    html: `<p>아래 링크를 눌러 비밀번호를 재설정해주세요. 이 링크는 1시간 동안 유효합니다.</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>본인이 요청하지 않았다면 이 메일을 무시하셔도 됩니다.</p>`,
+  });
+
+  // 이메일 발송 실패해도 사용자에겐 항상 동일하게 응답 (열거 공격 방지) — 서버 로그로만 확인
+  if (error) console.error("[password reset email] Resend error:", error);
+};
+
+export const resetPassword = async (token: string, newPassword: string) => {
+  const user = await prisma.user.findUnique({ where: { passwordResetToken: token } });
+
+  if (
+    !user ||
+    !user.passwordResetTokenExpiresAt ||
+    user.passwordResetTokenExpiresAt < new Date()
+  ) {
+    throw new AppError("유효하지 않거나 만료된 링크입니다.", 400);
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      password: hashedPassword,
+      passwordResetToken: null,
+      passwordResetTokenExpiresAt: null,
+    },
+  });
 };
 
 export const getMe = async (userId: string) => {

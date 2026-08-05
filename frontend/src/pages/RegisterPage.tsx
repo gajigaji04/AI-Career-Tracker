@@ -7,6 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { register as registerUser } from "../api/auth";
 import type { ExperienceLevel } from "../types/auth";
 import AuthLayout from "../components/layouts/AuthLayout";
+import SearchableCombobox from "../components/common/SearchableCombobox";
 import styles from "./RegisterPage.module.css";
 
 const EXPERIENCE_LEVELS: { value: ExperienceLevel; label: string }[] = [
@@ -17,15 +18,41 @@ const EXPERIENCE_LEVELS: { value: ExperienceLevel; label: string }[] = [
   { value: "EXPERIENCED_DEVELOPER", label: "경력 개발자" },
 ];
 
+const YEARS_INPUT_LEVELS: ExperienceLevel[] = ["JUNIOR_DEVELOPER", "EXPERIENCED_DEVELOPER"];
+
+const JOB_TITLE_OPTIONS = [
+  "프론트엔드 개발자",
+  "백엔드 개발자",
+  "풀스택 개발자",
+  "모바일 개발자 (iOS)",
+  "모바일 개발자 (Android)",
+  "데이터 엔지니어",
+  "데이터 사이언티스트",
+  "머신러닝/AI 엔지니어",
+  "DevOps 엔지니어",
+  "인프라/시스템 엔지니어",
+  "QA 엔지니어",
+  "보안 엔지니어",
+  "게임 개발자",
+  "임베디드 개발자",
+  "프로덕트 매니저",
+  "UI/UX 디자이너",
+];
+
 const STACK_OPTIONS = [
-  "React",
-  "TypeScript",
-  "Node.js",
-  "Java",
-  "Python",
-  "Spring",
-  "Vue",
-  "Next.js",
+  // Frontend
+  "React", "Vue", "Angular", "Svelte", "Next.js", "Nuxt.js", "TypeScript", "JavaScript",
+  // Backend
+  "Node.js", "Express", "NestJS", "Spring", "Spring Boot", "Django", "FastAPI", "Flask",
+  "Ruby on Rails", "Laravel", "ASP.NET",
+  // Languages
+  "Java", "Python", "Go", "Rust", "Kotlin", "Swift", "C++", "C#", "PHP", "Ruby",
+  // Database
+  "MySQL", "PostgreSQL", "MongoDB", "Redis", "Elasticsearch",
+  // DevOps/Infra
+  "Docker", "Kubernetes", "AWS", "GCP", "Azure", "Terraform", "GitHub Actions", "Jenkins",
+  // Mobile
+  "React Native", "Flutter", "Android", "iOS",
 ];
 
 const registerSchema = z
@@ -37,6 +64,7 @@ const registerSchema = z
     nickname: z.string().min(1, "닉네임을 입력해주세요."),
     jobTitle: z.string().optional(),
     experienceLevel: z.string().optional(),
+    yearsOfExperience: z.string().optional(),
     interestedStack: z.array(z.string()).optional(),
   })
   .refine((data) => data.password === data.passwordConfirm, {
@@ -71,6 +99,7 @@ const getPasswordStrength = (password: string): PasswordStrength => {
 export default function RegisterPage() {
   const navigate = useNavigate();
   const [submitError, setSubmitError] = useState("");
+  const [stackFilter, setStackFilter] = useState("");
 
   const {
     register,
@@ -86,7 +115,12 @@ export default function RegisterPage() {
 
   const selectedStack = watch("interestedStack") ?? [];
   const password = watch("password") ?? "";
+  const experienceLevel = watch("experienceLevel");
   const strength = getPasswordStrength(password);
+
+  const visibleStackOptions = stackFilter
+    ? STACK_OPTIONS.filter((s) => s.toLowerCase().includes(stackFilter.toLowerCase()))
+    : STACK_OPTIONS;
 
   const toggleStack = (stack: string) => {
     const next = selectedStack.includes(stack)
@@ -106,6 +140,9 @@ export default function RegisterPage() {
         jobTitle: values.jobTitle || undefined,
         experienceLevel: values.experienceLevel
           ? (values.experienceLevel as ExperienceLevel)
+          : undefined,
+        yearsOfExperience: values.yearsOfExperience
+          ? Number(values.yearsOfExperience)
           : undefined,
         interestedStack: values.interestedStack,
       });
@@ -211,36 +248,70 @@ export default function RegisterPage() {
 
           <div className={styles.field}>
             <label className={styles.label}>현재/희망 직무</label>
-            <input
-              type="text"
-              placeholder="예: 백엔드 개발자"
-              className={styles.input}
-              {...register("jobTitle")}
-            />
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.label}>경력 수준</label>
             <Controller
               control={control}
-              name="experienceLevel"
+              name="jobTitle"
               render={({ field }) => (
-                <select {...field} className={styles.select}>
-                  <option value="">선택 안 함</option>
-                  {EXPERIENCE_LEVELS.map((level) => (
-                    <option key={level.value} value={level.value}>
-                      {level.label}
-                    </option>
-                  ))}
-                </select>
+                <SearchableCombobox
+                  options={JOB_TITLE_OPTIONS}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  placeholder="검색하거나 직접 입력하세요"
+                />
               )}
             />
           </div>
 
+          <div className={styles.row}>
+            <div className={styles.field}>
+              <label className={styles.label}>경력 수준</label>
+              <Controller
+                control={control}
+                name="experienceLevel"
+                render={({ field }) => (
+                  <select {...field} className={styles.select}>
+                    <option value="">선택 안 함</option>
+                    {EXPERIENCE_LEVELS.map((level) => (
+                      <option key={level.value} value={level.value}>
+                        {level.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              />
+            </div>
+
+            {YEARS_INPUT_LEVELS.includes(experienceLevel as ExperienceLevel) && (
+              <div className={styles.field}>
+                <label className={styles.label}>경력 연차</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={60}
+                  placeholder="예: 3"
+                  className={styles.input}
+                  {...register("yearsOfExperience")}
+                />
+              </div>
+            )}
+          </div>
+
           <div className={styles.field}>
             <label className={styles.label}>관심 기술 스택</label>
+            <input
+              type="text"
+              placeholder="기술 스택 검색 (예: react)"
+              className={styles.input}
+              value={stackFilter}
+              onChange={(e) => setStackFilter(e.target.value)}
+            />
+            {selectedStack.length > 0 && (
+              <p className={styles.stackSelectedHint}>
+                선택됨: {selectedStack.join(", ")}
+              </p>
+            )}
             <div className={styles.chipGroup}>
-              {STACK_OPTIONS.map((stack) => (
+              {visibleStackOptions.map((stack) => (
                 <button
                   key={stack}
                   type="button"
@@ -252,6 +323,9 @@ export default function RegisterPage() {
                   {stack}
                 </button>
               ))}
+              {visibleStackOptions.length === 0 && (
+                <span className={styles.noResults}>검색 결과가 없습니다.</span>
+              )}
             </div>
           </div>
 

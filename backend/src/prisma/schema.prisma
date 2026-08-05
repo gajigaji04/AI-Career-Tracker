@@ -27,9 +27,13 @@ model User {
   name       String
   nickname   String
 
-  jobTitle        String?
-  experienceLevel ExperienceLevel?
-  interestedStack String[]          @default([])
+  jobTitle          String?
+  experienceLevel   ExperienceLevel?
+  yearsOfExperience Int?
+  interestedStack   String[]          @default([])
+
+  passwordResetToken           String?   @unique
+  passwordResetTokenExpiresAt  DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
