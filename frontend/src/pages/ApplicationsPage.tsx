@@ -42,7 +42,7 @@ export default function ApplicationsPage() {
       </div>
 
       {applications.length === 0 ? (
-        <EmptyState message="아직 지원 내역이 없습니다." />
+        <EmptyState icon="📈" message="아직 지원 내역이 없습니다." />
       ) : (
         <div className={styles.table}>
           <div className={styles.tableHeader}>

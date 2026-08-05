@@ -2,14 +2,27 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { prisma } from "../prisma/prisma";
 import { AppError } from "../errors/AppError";
+import type { ExperienceLevel } from "@prisma/client";
 
 interface RegisterDto {
   email: string;
   password: string;
   name: string;
+  nickname: string;
+  jobTitle?: string;
+  experienceLevel?: ExperienceLevel;
+  interestedStack?: string[];
 }
 
-export const register = async ({ email, password, name }: RegisterDto) => {
+export const register = async ({
+  email,
+  password,
+  name,
+  nickname,
+  jobTitle,
+  experienceLevel,
+  interestedStack,
+}: RegisterDto) => {
   const existing = await prisma.user.findUnique({ where: { email } });
 
   if (existing) {
@@ -19,8 +32,16 @@ export const register = async ({ email, password, name }: RegisterDto) => {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const user = await prisma.user.create({
-    data: { email, password: hashedPassword, name },
-    select: { id: true, email: true, name: true },
+    data: {
+      email,
+      password: hashedPassword,
+      name,
+      nickname,
+      jobTitle: jobTitle ?? null,
+      experienceLevel: experienceLevel ?? null,
+      interestedStack: interestedStack ?? [],
+    },
+    select: { id: true, email: true, name: true, nickname: true },
   });
 
   return user;

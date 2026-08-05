@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { login } from "../api/auth";
+import AuthLayout from "../components/layouts/AuthLayout";
 import styles from "./LoginPage.module.css";
 
 export default function LoginPage() {
@@ -9,6 +10,10 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const justRegistered = Boolean(
+    (location.state as { registered?: boolean } | null)?.registered,
+  );
 
   const handleSubmit = async () => {
     setError("");
@@ -16,7 +21,7 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      navigate("/dashboard");
+      navigate("/app/dashboard");
     } catch {
       setError("이메일 또는 비밀번호가 올바르지 않습니다.");
     } finally {
@@ -25,13 +30,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className={styles.container}>
+    <AuthLayout>
       <div className={styles.card}>
-        <div className={styles.brand}>
-          <span className={styles.brandIcon}>✦</span>
-          <h1 className={styles.brandName}>CareerHub</h1>
-          <p className={styles.brandSub}>AI 커리어 관리 플랫폼</p>
+        <div className={styles.header}>
+          <h1 className={styles.title}>로그인</h1>
+          <p className={styles.subtitle}>다시 오신 걸 환영해요.</p>
         </div>
+
+        {justRegistered && (
+          <p className={styles.success}>회원가입이 완료됐습니다. 로그인해주세요.</p>
+        )}
 
         <form onSubmit={(e) => { e.preventDefault(); void handleSubmit(); }} className={styles.form}>
           <div className={styles.field}>
@@ -47,7 +55,12 @@ export default function LoginPage() {
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>비밀번호</label>
+            <div className={styles.labelRow}>
+              <label className={styles.label}>비밀번호</label>
+              <span className={styles.forgotLink} title="준비 중인 기능입니다.">
+                비밀번호 찾기
+              </span>
+            </div>
             <input
               type="password"
               placeholder="비밀번호를 입력하세요"
@@ -72,6 +85,6 @@ export default function LoginPage() {
           </Link>
         </p>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

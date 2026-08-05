@@ -1,7 +1,7 @@
 .card {
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 24px 28px;
   display: flex;
   flex-direction: column;
@@ -13,11 +13,28 @@
   box-shadow: var(--shadow);
 }
 
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .label {
   font-size: 13px;
   font-weight: 500;
   color: var(--text);
   margin: 0;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-bg);
+  font-size: 15px;
 }
 
 .value {

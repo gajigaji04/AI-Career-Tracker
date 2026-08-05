@@ -31,6 +31,7 @@ const fakeUser = {
   id: "user-id-123",
   email: "test@example.com",
   name: "테스터",
+  nickname: "테스트닉네임",
   password: "hashed_password",
 };
 
@@ -47,6 +48,7 @@ describe("AuthService", () => {
       email: "test@example.com",
       password: "password123",
       name: "테스터",
+      nickname: "테스트닉네임",
     };
 
     it("새 유저를 생성하고 반환해야 한다", async () => {
@@ -60,6 +62,7 @@ describe("AuthService", () => {
         id: fakeUser.id,
         email: fakeUser.email,
         name: fakeUser.name,
+        nickname: fakeUser.nickname,
       } as never);
 
       // Act: 실제 함수 호출
@@ -70,6 +73,7 @@ describe("AuthService", () => {
         id: fakeUser.id,
         email: fakeUser.email,
         name: fakeUser.name,
+        nickname: fakeUser.nickname,
       });
 
       // bcrypt.hash가 올바른 인자로 호출됐는지 확인
@@ -81,8 +85,12 @@ describe("AuthService", () => {
           email: registerDto.email,
           password: "hashed_password",
           name: registerDto.name,
+          nickname: registerDto.nickname,
+          jobTitle: null,
+          experienceLevel: null,
+          interestedStack: [],
         },
-        select: { id: true, email: true, name: true },
+        select: { id: true, email: true, name: true, nickname: true },
       });
     });
 

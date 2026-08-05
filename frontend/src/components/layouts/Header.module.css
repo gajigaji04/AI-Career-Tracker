@@ -18,7 +18,7 @@
 .logoutBtn {
   padding: 7px 14px;
   border: 1.5px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 500;
   color: var(--text);

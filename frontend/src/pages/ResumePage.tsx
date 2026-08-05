@@ -62,7 +62,7 @@ export default function ResumePage() {
 
       {/* 이력서 목록 */}
       {resumes.length === 0 ? (
-        <EmptyState message="업로드된 이력서가 없습니다." />
+        <EmptyState icon="📄" message="업로드된 이력서가 없습니다." />
       ) : (
         <div className={styles.list}>
           {resumes.map((resume) => (

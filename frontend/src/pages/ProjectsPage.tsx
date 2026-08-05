@@ -34,7 +34,7 @@ export default function ProjectsPage() {
       </div>
 
       {projects.length === 0 ? (
-        <EmptyState message="아직 프로젝트가 없습니다." />
+        <EmptyState icon="🗂️" message="아직 프로젝트가 없습니다." />
       ) : (
         <div className={styles.grid}>
           {projects.map((project) => (
