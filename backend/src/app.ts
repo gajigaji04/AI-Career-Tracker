@@ -32,7 +32,6 @@ app.use("/dashboard", dashboardRouter);
 app.use("/ai", aiRouter);
 app.use("/resumes", resumeRouter);
 
-app.use(errorHandler);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get("/", (_req, res) => {
@@ -46,5 +45,7 @@ app.get("/", (_req, res) => {
     </p>
   `);
 });
+
+app.use(errorHandler);
 
 export default app;
