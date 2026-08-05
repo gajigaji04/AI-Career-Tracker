@@ -13,7 +13,10 @@ const NAV_ITEMS = [
 export default function Sidebar() {
   return (
     <nav className={styles.sidebar}>
-      <span className={styles.logo}>AI CareerHub</span>
+      <span className={styles.logo}>
+        <span className={styles.logoIcon}>✦</span>
+        CareerHub
+      </span>
       {NAV_ITEMS.map(({ to, label }) => (
         <NavLink
           key={to}

@@ -1,7 +1,7 @@
 .card {
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -52,7 +52,7 @@
   text-decoration: none;
   border: 1px solid var(--border);
   padding: 5px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   transition: border-color 0.15s, color 0.15s;
 }
 

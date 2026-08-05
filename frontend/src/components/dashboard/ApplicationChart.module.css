@@ -1,7 +1,7 @@
 .wrapper {
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 24px 28px;
 }
 
