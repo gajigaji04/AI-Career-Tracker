@@ -1,9 +1,15 @@
 import { useNavigate } from "react-router-dom";
 import Button from "../common/Button";
+import { useCountUp } from "../../hooks/useCountUp";
 import styles from "./HeroSection.module.css";
+
+const BAR_HEIGHTS = [40, 65, 45, 80, 55, 90, 70];
 
 export default function HeroSection() {
   const navigate = useNavigate();
+  const applications = useCountUp(12);
+  const studies = useCountUp(34);
+  const aiAnalyses = useCountUp(8);
 
   return (
     <section className={styles.hero}>
@@ -40,23 +46,23 @@ export default function HeroSection() {
             <div className={styles.statRow}>
               <div className={styles.statCard}>
                 <span className={styles.statLabel}>지원 현황</span>
-                <span className={styles.statValue}>12</span>
+                <span className={styles.statValue}>{applications}</span>
               </div>
               <div className={styles.statCard}>
                 <span className={styles.statLabel}>학습 기록</span>
-                <span className={styles.statValue}>34</span>
+                <span className={styles.statValue}>{studies}</span>
               </div>
               <div className={styles.statCard}>
                 <span className={styles.statLabel}>AI 분석</span>
-                <span className={styles.statValue}>8</span>
+                <span className={styles.statValue}>{aiAnalyses}</span>
               </div>
             </div>
             <div className={styles.chart}>
-              {[40, 65, 45, 80, 55, 90, 70].map((h, i) => (
+              {BAR_HEIGHTS.map((h, i) => (
                 <span
                   key={i}
                   className={styles.bar}
-                  style={{ height: `${h}%` }}
+                  style={{ height: `${h}%`, animationDelay: `${i * 70}ms` }}
                 />
               ))}
             </div>
