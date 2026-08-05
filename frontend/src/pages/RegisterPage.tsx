@@ -46,6 +46,28 @@ const registerSchema = z
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
+type PasswordStrength = { score: 0 | 1 | 2 | 3; label: string };
+
+const getPasswordStrength = (password: string): PasswordStrength => {
+  if (!password) return { score: 0, label: "" };
+
+  const varietyCount = [
+    /[a-z]/.test(password),
+    /[A-Z]/.test(password),
+    /[0-9]/.test(password),
+    /[^a-zA-Z0-9]/.test(password),
+  ].filter(Boolean).length;
+
+  let score = 0;
+  if (password.length >= 8) score += 1;
+  if (password.length >= 12 && varietyCount >= 2) score += 1;
+  if (varietyCount >= 3) score += 1;
+
+  if (score <= 1) return { score: 1, label: "약함" };
+  if (score === 2) return { score: 2, label: "보통" };
+  return { score: 3, label: "강함" };
+};
+
 export default function RegisterPage() {
   const navigate = useNavigate();
   const [submitError, setSubmitError] = useState("");
@@ -63,6 +85,8 @@ export default function RegisterPage() {
   });
 
   const selectedStack = watch("interestedStack") ?? [];
+  const password = watch("password") ?? "";
+  const strength = getPasswordStrength(password);
 
   const toggleStack = (stack: string) => {
     const next = selectedStack.includes(stack)
@@ -122,6 +146,21 @@ export default function RegisterPage() {
               />
               {errors.password && (
                 <p className={styles.fieldError}>{errors.password.message}</p>
+              )}
+              {password && (
+                <div className={styles.strengthMeter}>
+                  <div className={styles.strengthBars}>
+                    {[1, 2, 3].map((level) => (
+                      <span
+                        key={level}
+                        className={`${styles.strengthBar} ${
+                          level <= strength.score ? styles[`strength${strength.score}`] : ""
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className={styles.strengthLabel}>{strength.label}</span>
+                </div>
               )}
             </div>
 

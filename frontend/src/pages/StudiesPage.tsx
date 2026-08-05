@@ -41,7 +41,7 @@ export default function StudiesPage() {
       </div>
 
       {studies.length === 0 ? (
-        <EmptyState message="아직 학습 기록이 없습니다." />
+        <EmptyState icon="📚" message="아직 학습 기록이 없습니다." />
       ) : (
         <ul className={styles.list}>
           {studies.map((study) => (

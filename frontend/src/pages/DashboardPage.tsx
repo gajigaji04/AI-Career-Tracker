@@ -46,9 +46,9 @@ export default function DashboardPage() {
       </div>
 
       <div className={styles.stats}>
-        <StatCard label="학습 기록" value={data?.data?.studies ?? 0} />
-        <StatCard label="프로젝트" value={data?.data?.projects ?? 0} />
-        <StatCard label="지원 현황" value={data?.data?.applications ?? 0} />
+        <StatCard icon="📚" label="학습 기록" value={data?.data?.studies ?? 0} />
+        <StatCard icon="🗂️" label="프로젝트" value={data?.data?.projects ?? 0} />
+        <StatCard icon="📈" label="지원 현황" value={data?.data?.applications ?? 0} />
       </div>
 
       {hasApplications && (

@@ -8,7 +8,20 @@
   color: var(--text);
 }
 
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-size: 22px;
+  margin-bottom: 16px;
+}
+
 .message {
   font-size: 15px;
-  margin-top: 12px;
+  margin: 0;
 }

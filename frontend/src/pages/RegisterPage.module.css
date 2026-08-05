@@ -87,6 +87,47 @@
   margin: -10px 0 0;
 }
 
+/* ── 비밀번호 강도 표시 ── */
+.strengthMeter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.strengthBars {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+
+.strengthBar {
+  height: 4px;
+  flex: 1;
+  border-radius: 999px;
+  background: var(--border);
+  transition: background 0.2s;
+}
+
+.strength1 {
+  background: #ef4444;
+}
+
+.strength2 {
+  background: #f59e0b;
+}
+
+.strength3 {
+  background: #16a34a;
+}
+
+.strengthLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  min-width: 28px;
+}
+
 .fieldError {
   font-size: 12px;
   color: #ef4444;
