@@ -13,12 +13,13 @@ CareerHub는 취업 준비생이 학습 기록, 프로젝트 경험, 지원 현�
 ## 주요 기능
 
 - 회원가입 / 로그인
+- 비밀번호 찾기 / 재설정 (이메일 인증)
 - 학습 기록 관리
 - 프로젝트 관리
 - 지원 현황 관리
 - 이력서 업로드
 - 통계 대시보드
-- AI 커리어 분석
+- AI 커리어 분석 (자소서 초안 · 예상 면접 질문 생성)
 
 ## 기술 스택
 
@@ -28,12 +29,21 @@ CareerHub는 취업 준비생이 학습 기록, 프로젝트 경험, 지원 현�
 - TypeScript
 - React Query
 - React Router
+- React Hook Form / Zod (폼 검증)
+- Recharts (통계 시각화)
+- CSS Modules
 
 ### Backend
 
 - Node.js
 - Express
 - TypeScript
+- JWT 기반 인증 (Access / Refresh Token)
+- Zod (요청 검증)
+- Multer / AWS S3 (파일 업로드)
+- Resend (이메일 발송)
+- Groq (AI 분석)
+- Swagger (API 문서)
 
 ### Database
 
@@ -47,15 +57,16 @@ CareerHub는 취업 준비생이 학습 기록, 프로젝트 경험, 지원 현�
 - AWS S3
 - Nginx (리버스 프록시)
 - Let's Encrypt (HTTPS)
+- DuckDNS (도메인)
 
 ### DevOps
 
 - Docker
-- GitHub Actions (CI/CD)
+- GitHub Actions (CI/CD, 배포 전 백엔드 테스트 게이트)
 
 ### Testing
 
-- Vitest
+- Vitest (백엔드 유닛 테스트)
 
 ## 프로젝트 문서
 
