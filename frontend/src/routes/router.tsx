@@ -6,6 +6,7 @@ import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import ForgotPasswordPage from "../pages/ForgotPasswordPage";
 import ResetPasswordPage from "../pages/ResetPasswordPage";
+import NotFoundPage from "../pages/NotFoundPage";
 import DashboardPage from "../pages/DashboardPage";
 import StudiesPage from "../pages/StudiesPage";
 import ProjectsPage from "../pages/ProjectsPage";
@@ -17,6 +18,7 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: <LandingPage />,
+    errorElement: <NotFoundPage />,
   },
   {
     path: "/login",
@@ -45,5 +47,9 @@ export const router = createBrowserRouter([
       { path: "ai", element: <AIPage /> },
       { path: "resumes", element: <ResumePage /> },
     ],
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />,
   },
 ]);

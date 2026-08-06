@@ -15,7 +15,7 @@ api.interceptors.response.use(
 
       try {
         await axios.post(
-          "http://localhost:3000/auth/refresh",
+          `${import.meta.env.VITE_API_URL ?? "http://localhost:3000"}/auth/refresh`,
           {},
           { withCredentials: true },
         );
