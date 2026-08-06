@@ -3,7 +3,11 @@ import { useMe } from "../../hooks/useMe";
 import { logout } from "../../api/auth";
 import styles from "./Header.module.css";
 
-export default function Header() {
+type HeaderProps = {
+  onMenuClick: () => void;
+};
+
+export default function Header({ onMenuClick }: HeaderProps) {
   const { data } = useMe();
   const navigate = useNavigate();
 
@@ -14,6 +18,9 @@ export default function Header() {
 
   return (
     <header className={styles.header}>
+      <button className={styles.menuBtn} onClick={onMenuClick} aria-label="메뉴 열기">
+        ☰
+      </button>
       <span className={styles.name}>{data?.data?.name}</span>
       <button className={styles.logoutBtn} onClick={handleLogout}>
         로그아웃

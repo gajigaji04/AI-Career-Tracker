@@ -10,34 +10,6 @@
   gap: 12px;
 }
 
-.selectLabel {
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-h);
-  margin-bottom: 6px;
-  letter-spacing: 0.1px;
-}
-
-.select {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-md);
-  font-size: 15px;
-  color: var(--text-h);
-  background: var(--bg);
-  outline: none;
-  cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  box-sizing: border-box;
-}
-
-.select:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-bg);
-}
-
 .actions {
   display: flex;
   gap: 8px;

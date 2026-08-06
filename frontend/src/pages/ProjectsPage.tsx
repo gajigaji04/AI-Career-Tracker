@@ -10,19 +10,18 @@ import ProjectCard from "../components/projects/ProjectCard";
 import Modal from "../components/common/Modal";
 import Button from "../components/common/Button";
 import EmptyState from "../components/common/EmptyState";
+import PageState from "../components/common/PageState";
 import styles from "./ProjectsPage.module.css";
 import type { Project } from "../api/project";
 
 export default function ProjectsPage() {
-  const { data, isLoading } = useProjects();
+  const { data, isLoading, isError } = useProjects();
   const createProject = useCreateProject();
   const updateProject = useUpdateProject();
   const deleteProject = useDeleteProject();
 
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
-
-  if (isLoading) return <div>Loading...</div>;
 
   const projects: Project[] = data?.data ?? [];
 
@@ -33,20 +32,22 @@ export default function ProjectsPage() {
         <Button onClick={() => setIsAddOpen(true)}>+ 추가</Button>
       </div>
 
-      {projects.length === 0 ? (
-        <EmptyState icon="🗂️" message="아직 프로젝트가 없습니다." />
-      ) : (
-        <div className={styles.grid}>
-          {projects.map((project) => (
-            <ProjectCard
-              key={project.id}
-              project={project}
-              onEdit={setEditingProject}
-              onDelete={(id) => deleteProject.mutate(id)}
-            />
-          ))}
-        </div>
-      )}
+      <PageState isLoading={isLoading} isError={isError}>
+        {projects.length === 0 ? (
+          <EmptyState icon="🗂️" message="아직 프로젝트가 없습니다." />
+        ) : (
+          <div className={styles.grid}>
+            {projects.map((project) => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                onEdit={setEditingProject}
+                onDelete={(id) => deleteProject.mutate(id)}
+              />
+            ))}
+          </div>
+        )}
+      </PageState>
 
       <Modal
         isOpen={isAddOpen}

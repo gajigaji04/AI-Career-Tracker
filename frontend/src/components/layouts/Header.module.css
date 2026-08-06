@@ -9,6 +9,25 @@
   flex-shrink: 0;
 }
 
+.menuBtn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text-h);
+  cursor: pointer;
+  margin-right: auto;
+
+  @media (max-width: 768px) {
+    display: flex;
+  }
+}
+
 .name {
   font-size: 14px;
   font-weight: 500;

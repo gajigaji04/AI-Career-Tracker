@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useApplication } from "../hooks/useApplication";
 import { useAiAnalyses, useGenerateCoverLetter, useGenerateInterviewQuestions } from "../hooks/useAI";
 import Button from "../components/common/Button";
-import Badge from "../components/common/Badge";
+import Select from "../components/common/Select";
+import Spinner from "../components/common/Spinner";
 import type { ApplicationStatus } from "../api/application";
 import type { AiAnalysis } from "../api/ai";
 import styles from "./AIPage.module.css";
@@ -10,6 +11,11 @@ import styles from "./AIPage.module.css";
 const TYPE_LABEL: Record<string, string> = {
   COVER_LETTER: "자소서 초안",
   INTERVIEW_QUESTIONS: "면접 질문",
+};
+
+const TYPE_ICON: Record<string, string> = {
+  COVER_LETTER: "📝",
+  INTERVIEW_QUESTIONS: "🎤",
 };
 
 type Application = {
@@ -54,24 +60,19 @@ export default function AIPage() {
         </p>
       </div>
 
-      <div className={styles.selectSection}>
-        <label className={styles.selectLabel}>지원 내역 선택</label>
-        <select
-          className={styles.select}
-          value={selectedAppId}
-          onChange={(e) => {
-            setSelectedAppId(e.target.value);
-            setActiveResult(null);
-          }}
-        >
-          <option value="">-- 지원 내역을 선택하세요 --</option>
-          {applications.map((app) => (
-            <option key={app.id} value={app.id}>
-              {app.companyName} · {app.position}
-            </option>
-          ))}
-        </select>
-      </div>
+      <Select
+        label="지원 내역 선택"
+        placeholder="-- 지원 내역을 선택하세요 --"
+        value={selectedAppId}
+        onChange={(e) => {
+          setSelectedAppId(e.target.value);
+          setActiveResult(null);
+        }}
+        options={applications.map((app) => ({
+          value: app.id,
+          label: `${app.companyName} · ${app.position}`,
+        }))}
+      />
 
       {selectedAppId && (
         <div className={styles.actions}>
@@ -93,7 +94,7 @@ export default function AIPage() {
 
       {isGenerating && (
         <div className={styles.loading}>
-          <div className={styles.spinner} />
+          <Spinner />
           AI가 생성 중입니다...
         </div>
       )}
@@ -120,10 +121,8 @@ export default function AIPage() {
               onClick={() => setActiveResult(item)}
             >
               <div className={styles.historyMeta}>
-                <Badge status={"APPLIED" as ApplicationStatus} />
-                <span style={{ fontWeight: 600, fontSize: 14, color: "var(--text-h)" }}>
-                  {TYPE_LABEL[item.type]}
-                </span>
+                <span className={styles.historyTypeIcon}>{TYPE_ICON[item.type]}</span>
+                <span className={styles.historyType}>{TYPE_LABEL[item.type]}</span>
                 <span className={styles.historyDate}>
                   {new Date(item.createdAt).toLocaleDateString("ko-KR")}
                 </span>
@@ -135,7 +134,7 @@ export default function AIPage() {
       )}
 
       {selectedAppId && !isLoadingHistory && analyses.length === 0 && !activeResult && !isGenerating && (
-        <p style={{ color: "var(--text)", fontSize: 14 }}>
+        <p className={styles.emptyHistory}>
           아직 생성된 AI 분석이 없습니다. 위 버튼으로 생성해보세요.
         </p>
       )}

@@ -1,0 +1,13 @@
+.state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 64px 24px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.errorText {
+  color: #ef4444;
+}

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Input from "../common/Input";
+import Select from "../common/Select";
 import Button from "../common/Button";
 import type { ApplicationStatus } from "../../api/application";
 import styles from "./ApplicationForm.module.css";
@@ -58,20 +59,12 @@ export default function ApplicationForm({
           placeholder="포지션"
         />
       </div>
-      <div>
-        <label className={styles.selectLabel}>상태</label>
-        <select
-          className={styles.select}
-          value={status}
-          onChange={(e) => setStatus(e.target.value as ApplicationStatus)}
-        >
-          {STATUS_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      <Select
+        label="상태"
+        value={status}
+        onChange={(e) => setStatus(e.target.value as ApplicationStatus)}
+        options={STATUS_OPTIONS}
+      />
       <Input
         label="메모"
         value={memo}

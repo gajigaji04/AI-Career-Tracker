@@ -1,5 +1,5 @@
 import Button from "../common/Button";
-import styles from "./StudyItem.module.css";
+import styles from "./StudyCard.module.css";
 
 type Study = {
   id: string;
@@ -9,22 +9,20 @@ type Study = {
   studyTime: number;
 };
 
-type StudyItemProps = {
+type StudyCardProps = {
   study: Study;
   onEdit: (study: Study) => void;
   onDelete: (id: string) => void;
 };
 
-export default function StudyItem({ study, onEdit, onDelete }: StudyItemProps) {
+export default function StudyCard({ study, onEdit, onDelete }: StudyCardProps) {
   return (
-    <li className={styles.item}>
-      <div className={styles.info}>
-        <span className={styles.title}>{study.title}</span>
-        <span className={styles.meta}>
-          {study.category} · {study.studyTime}분
-        </span>
-        {study.content && <span className={styles.meta}>{study.content}</span>}
-      </div>
+    <div className={styles.card}>
+      <h3 className={styles.title}>{study.title}</h3>
+      <span className={styles.meta}>
+        {study.category} · {study.studyTime}분
+      </span>
+      {study.content && <p className={styles.desc}>{study.content}</p>}
       <div className={styles.actions}>
         <Button variant="secondary" onClick={() => onEdit(study)}>
           수정
@@ -33,6 +31,6 @@ export default function StudyItem({ study, onEdit, onDelete }: StudyItemProps) {
           삭제
         </Button>
       </div>
-    </li>
+    </div>
   );
 }

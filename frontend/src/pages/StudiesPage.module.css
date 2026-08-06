@@ -2,7 +2,6 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  max-width: 720px;
 }
 
 .header {
@@ -26,11 +25,8 @@
   padding: 24px;
 }
 
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
 }
