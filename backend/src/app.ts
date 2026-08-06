@@ -11,6 +11,7 @@ import aiRouter from "./routes/ai.route";
 import resumeRouter from "./routes/resume.route";
 
 import { errorHandler } from "./middlewares/error.middleware";
+import { prisma } from "./prisma/prisma";
 
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger";
@@ -33,6 +34,15 @@ app.use("/ai", aiRouter);
 app.use("/resumes", resumeRouter);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+app.get("/health", async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.status(200).json({ status: "ok", db: "connected" });
+  } catch {
+    res.status(503).json({ status: "error", db: "disconnected" });
+  }
+});
 
 app.get("/", (_req, res) => {
   res.send(`
