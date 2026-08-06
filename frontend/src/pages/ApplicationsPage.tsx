@@ -6,10 +6,11 @@ import {
   useDeleteApplication,
 } from "../hooks/useApplication";
 import ApplicationForm from "../components/applications/ApplicationForm";
-import ApplicationItem from "../components/applications/ApplicationItem";
+import ApplicationCard from "../components/applications/ApplicationCard";
 import Modal from "../components/common/Modal";
 import Button from "../components/common/Button";
 import EmptyState from "../components/common/EmptyState";
+import PageState from "../components/common/PageState";
 import type { ApplicationStatus } from "../api/application";
 import styles from "./ApplicationsPage.module.css";
 
@@ -22,15 +23,13 @@ type Application = {
 };
 
 export default function ApplicationsPage() {
-  const { data, isLoading } = useApplication();
+  const { data, isLoading, isError } = useApplication();
   const createApplication = useCreateApplication();
   const updateApplication = useUpdateApplication();
   const deleteApplication = useDeleteApplication();
 
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingApp, setEditingApp] = useState<Application | null>(null);
-
-  if (isLoading) return <div>Loading...</div>;
 
   const applications: Application[] = data?.data ?? [];
 
@@ -41,29 +40,22 @@ export default function ApplicationsPage() {
         <Button onClick={() => setIsAddOpen(true)}>+ 추가</Button>
       </div>
 
-      {applications.length === 0 ? (
-        <EmptyState icon="📈" message="아직 지원 내역이 없습니다." />
-      ) : (
-        <div className={styles.table}>
-          <div className={styles.tableHeader}>
-            <span>회사명</span>
-            <span>포지션</span>
-            <span>상태</span>
-            <span />
-            <span />
-          </div>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+      <PageState isLoading={isLoading} isError={isError}>
+        {applications.length === 0 ? (
+          <EmptyState icon="📈" message="아직 지원 내역이 없습니다." />
+        ) : (
+          <div className={styles.grid}>
             {applications.map((app) => (
-              <ApplicationItem
+              <ApplicationCard
                 key={app.id}
                 application={app}
                 onEdit={setEditingApp}
                 onDelete={(id) => deleteApplication.mutate(id)}
               />
             ))}
-          </ul>
-        </div>
-      )}
+          </div>
+        )}
+      </PageState>
 
       <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="지원 내역 추가">
         <ApplicationForm

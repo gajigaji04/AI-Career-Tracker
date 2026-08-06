@@ -1,7 +1,7 @@
 import Badge from "../common/Badge";
 import Button from "../common/Button";
 import type { ApplicationStatus } from "../../api/application";
-import styles from "./ApplicationItem.module.css";
+import styles from "./ApplicationCard.module.css";
 
 type Application = {
   id: string;
@@ -11,19 +11,25 @@ type Application = {
   memo?: string;
 };
 
-type ApplicationItemProps = {
+type ApplicationCardProps = {
   application: Application;
   onEdit: (application: Application) => void;
   onDelete: (id: string) => void;
 };
 
-export default function ApplicationItem({ application, onEdit, onDelete }: ApplicationItemProps) {
+export default function ApplicationCard({
+  application,
+  onEdit,
+  onDelete,
+}: ApplicationCardProps) {
   return (
-    <li className={styles.item}>
-      <span className={styles.company}>{application.companyName}</span>
+    <div className={styles.card}>
+      <div className={styles.header}>
+        <h3 className={styles.company}>{application.companyName}</h3>
+        <Badge status={application.status} />
+      </div>
       <span className={styles.position}>{application.position}</span>
-      <Badge status={application.status} />
-      <span />
+      {application.memo && <p className={styles.memo}>{application.memo}</p>}
       <div className={styles.actions}>
         <Button variant="secondary" onClick={() => onEdit(application)}>
           수정
@@ -32,7 +38,6 @@ export default function ApplicationItem({ application, onEdit, onDelete }: Appli
           삭제
         </Button>
       </div>
-      {application.memo && <span className={styles.memo}>{application.memo}</span>}
-    </li>
+    </div>
   );
 }

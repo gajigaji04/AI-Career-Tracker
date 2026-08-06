@@ -2,11 +2,13 @@ import { useRef, useState } from "react";
 import { useResumes, useUploadResume, useDeleteResume } from "../hooks/useResume";
 import Button from "../components/common/Button";
 import EmptyState from "../components/common/EmptyState";
+import PageState from "../components/common/PageState";
+import Spinner from "../components/common/Spinner";
 import type { Resume } from "../api/resume";
 import styles from "./ResumePage.module.css";
 
 export default function ResumePage() {
-  const { data, isLoading } = useResumes();
+  const { data, isLoading, isError } = useResumes();
   const uploadResume = useUploadResume();
   const deleteResume = useDeleteResume();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -24,8 +26,6 @@ export default function ResumePage() {
     setIsDragging(false);
     handleFile(e.dataTransfer.files[0]);
   };
-
-  if (isLoading) return <div>Loading...</div>;
 
   return (
     <div className={styles.page}>
@@ -55,47 +55,49 @@ export default function ResumePage() {
 
       {uploadResume.isPending && (
         <div className={styles.uploading}>
-          <div className={styles.spinner} />
+          <Spinner />
           업로드 중...
         </div>
       )}
 
       {/* 이력서 목록 */}
-      {resumes.length === 0 ? (
-        <EmptyState icon="📄" message="업로드된 이력서가 없습니다." />
-      ) : (
-        <div className={styles.list}>
-          {resumes.map((resume) => (
-            <div key={resume.id} className={styles.item}>
-              <span className={styles.versionBadge}>v{resume.version}</span>
-              <div className={styles.fileInfo}>
-                <span className={styles.fileName}>{resume.fileName}</span>
-                <span className={styles.fileDate}>
-                  {new Date(resume.createdAt).toLocaleDateString("ko-KR", {
-                    year: "numeric", month: "long", day: "numeric",
-                  })}
-                </span>
+      <PageState isLoading={isLoading} isError={isError}>
+        {resumes.length === 0 ? (
+          <EmptyState icon="📄" message="업로드된 이력서가 없습니다." />
+        ) : (
+          <div className={styles.list}>
+            {resumes.map((resume) => (
+              <div key={resume.id} className={styles.item}>
+                <span className={styles.versionBadge}>v{resume.version}</span>
+                <div className={styles.fileInfo}>
+                  <span className={styles.fileName}>{resume.fileName}</span>
+                  <span className={styles.fileDate}>
+                    {new Date(resume.createdAt).toLocaleDateString("ko-KR", {
+                      year: "numeric", month: "long", day: "numeric",
+                    })}
+                  </span>
+                </div>
+                <div className={styles.actions}>
+                  <a
+                    className={styles.downloadLink}
+                    href={resume.fileUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    보기
+                  </a>
+                  <Button
+                    variant="danger"
+                    onClick={() => deleteResume.mutate(resume.id)}
+                  >
+                    삭제
+                  </Button>
+                </div>
               </div>
-              <div className={styles.actions}>
-                <a
-                  className={styles.downloadLink}
-                  href={resume.fileUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  보기
-                </a>
-                <Button
-                  variant="danger"
-                  onClick={() => deleteResume.mutate(resume.id)}
-                >
-                  삭제
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </PageState>
     </div>
   );
 }

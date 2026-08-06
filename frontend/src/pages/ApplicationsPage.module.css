@@ -26,22 +26,8 @@
   max-width: 640px;
 }
 
-.table {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-
-.tableHeader {
+.grid {
   display: grid;
-  grid-template-columns: 1fr 1fr auto auto auto;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 16px;
-  padding: 12px 20px;
-  background: var(--code-bg);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text);
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
 }

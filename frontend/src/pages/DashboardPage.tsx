@@ -3,6 +3,8 @@ import { useDashboard } from "../hooks/useDashboard";
 import { useApplication } from "../hooks/useApplication";
 import StatCard from "../components/dashboard/StatCard";
 import ApplicationChart from "../components/dashboard/ApplicationChart";
+import EmptyState from "../components/common/EmptyState";
+import PageState from "../components/common/PageState";
 import styles from "./DashboardPage.module.css";
 import type { ApplicationStatus } from "../api/application";
 
@@ -24,7 +26,7 @@ const STATUS_ORDER: ApplicationStatus[] = [
 
 export default function DashboardPage() {
   const { data: meData } = useMe();
-  const { data, isLoading } = useDashboard();
+  const { data, isLoading, isError } = useDashboard();
   const { data: appData } = useApplication();
 
   const chartData = STATUS_ORDER.map((status) => ({
@@ -36,8 +38,6 @@ export default function DashboardPage() {
 
   const hasApplications = chartData.some((d) => d.count > 0);
 
-  if (isLoading) return <div>Loading...</div>;
-
   return (
     <div className={styles.page}>
       <div className={styles.greeting}>
@@ -45,17 +45,23 @@ export default function DashboardPage() {
         <p className={styles.email}>{meData?.data?.email}</p>
       </div>
 
-      <div className={styles.stats}>
-        <StatCard icon="📚" label="학습 기록" value={data?.data?.studies ?? 0} />
-        <StatCard icon="🗂️" label="프로젝트" value={data?.data?.projects ?? 0} />
-        <StatCard icon="📈" label="지원 현황" value={data?.data?.applications ?? 0} />
-      </div>
-
-      {hasApplications && (
-        <div className={styles.chart}>
-          <ApplicationChart data={chartData} />
+      <PageState isLoading={isLoading} isError={isError}>
+        <div className={styles.stats}>
+          <StatCard icon="📚" label="학습 기록" value={data?.data?.studies ?? 0} />
+          <StatCard icon="🗂️" label="프로젝트" value={data?.data?.projects ?? 0} />
+          <StatCard icon="📈" label="지원 현황" value={data?.data?.applications ?? 0} />
         </div>
-      )}
+
+        <div className={styles.chart}>
+          {hasApplications ? (
+            <ApplicationChart data={chartData} />
+          ) : (
+            <div className={styles.chartEmpty}>
+              <EmptyState icon="📈" message="지원 현황을 기록하면 여기에 통계가 표시됩니다." />
+            </div>
+          )}
+        </div>
+      </PageState>
     </div>
   );
 }

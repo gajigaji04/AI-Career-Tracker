@@ -10,24 +10,33 @@ const NAV_ITEMS = [
   { to: "/app/resumes", label: "이력서" },
 ];
 
-export default function Sidebar() {
+type SidebarProps = {
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
-    <nav className={styles.sidebar}>
-      <span className={styles.logo}>
-        <span className={styles.logoIcon}>✦</span>
-        CareerHub
-      </span>
-      {NAV_ITEMS.map(({ to, label }) => (
-        <NavLink
-          key={to}
-          to={to}
-          className={({ isActive }) =>
-            `${styles.link} ${isActive ? styles.active : ""}`
-          }
-        >
-          {label}
-        </NavLink>
-      ))}
-    </nav>
+    <>
+      {isOpen && <div className={styles.backdrop} onClick={onClose} />}
+      <nav className={`${styles.sidebar} ${isOpen ? styles.open : ""}`}>
+        <span className={styles.logo}>
+          <span className={styles.logoIcon}>✦</span>
+          CareerHub
+        </span>
+        {NAV_ITEMS.map(({ to, label }) => (
+          <NavLink
+            key={to}
+            to={to}
+            onClick={onClose}
+            className={({ isActive }) =>
+              `${styles.link} ${isActive ? styles.active : ""}`
+            }
+          >
+            {label}
+          </NavLink>
+        ))}
+      </nav>
+    </>
   );
 }
