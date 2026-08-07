@@ -35,6 +35,7 @@ export default function ForgotPasswordPage() {
           </p>
         ) : (
           <form
+            noValidate
             onSubmit={(e) => {
               e.preventDefault();
               void handleSubmit();
