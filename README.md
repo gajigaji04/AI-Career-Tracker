@@ -293,6 +293,10 @@ erDiagram
 
 전체 API는 배포 환경에서 Swagger UI로 확인할 수 있습니다: **[/api-docs](https://aicareerhub-site.duckdns.org/api-docs)**
 
+> 아래 표의 URL은 Express 라우터 기준 경로입니다. 배포 환경에서는 Nginx가 `/api/` 프리픽스로 요청을 받아
+> 백엔드로 프록시하므로, 외부에서 호출할 때는 예를 들어 `/auth/login` → `https://aicareerhub-site.duckdns.org/api/auth/login`
+> 형태로 `/api`를 붙여야 합니다. 로컬 개발 서버(`http://localhost:3000`)에서는 프리픽스 없이 표의 경로 그대로 호출합니다.
+
 대표 엔드포인트:
 
 | Method | URL | 설명 | 인증 |
