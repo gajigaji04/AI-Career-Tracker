@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { Resend } from "resend";
 import { prisma } from "../prisma/prisma";
 import { AppError } from "../errors/AppError";
+import { logger } from "../config/logger";
 import type { ExperienceLevel } from "@prisma/client";
 
 const getResendClient = () => new Resend(process.env.RESEND_API_KEY);
@@ -134,7 +135,7 @@ export const requestPasswordReset = async (email: string) => {
   });
 
   // 이메일 발송 실패해도 사용자에겐 항상 동일하게 응답 (열거 공격 방지) — 서버 로그로만 확인
-  if (error) console.error("[password reset email] Resend error:", error);
+  if (error) logger.error({ err: error }, "password reset email failed to send");
 };
 
 export const resetPassword = async (token: string, newPassword: string) => {

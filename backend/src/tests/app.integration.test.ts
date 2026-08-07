@@ -240,6 +240,26 @@ describe("POST /studies — 인증 + 검증 미들웨어가 실제로 체인되�
   });
 });
 
+describe("POST /ai/cover-letter — AI 라우트도 다른 라우트와 동일하게 검증되는지", () => {
+  const validToken = () =>
+    jwt.sign({ userId: fakeUser.id }, process.env.JWT_SECRET!, { expiresIn: "1h" });
+
+  it("인증 없이는 401이다", async () => {
+    const res = await request(app).post("/ai/cover-letter").send({});
+    expect(res.status).toBe(401);
+  });
+
+  it("인증은 됐지만 applicationId가 없으면 400을 반환하고 Groq를 호출하지 않는다", async () => {
+    const res = await request(app)
+      .post("/ai/cover-letter")
+      .set("Cookie", [`accessToken=${validToken()}`])
+      .send({});
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+  });
+});
+
 describe("정의되지 않은 라우트 / 에러 핸들러", () => {
   it("존재하지 않는 라우트는 404를 반환한다", async () => {
     const res = await request(app).get("/no-such-route");
