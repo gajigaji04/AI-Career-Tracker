@@ -13,7 +13,12 @@ const options = {
 
     servers: [
       {
+        url: "https://aicareerhub-site.duckdns.org/api",
+        description: "Production",
+      },
+      {
         url: "http://localhost:3000",
+        description: "Local",
       },
     ],
 
