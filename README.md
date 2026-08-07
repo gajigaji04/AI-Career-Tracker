@@ -87,19 +87,27 @@
 
 ## 서비스 화면
 
-> TODO: 아래 각 항목에 실제 스크린샷 추가 (`docs/images/` 에 저장 후 경로 연결)
+### 랜딩 / 인증
 
-| 화면      | 스크린샷 |
-| --------- | -------- |
-| 랜딩 페이지 | TODO |
-| 회원가입 / 로그인 | TODO |
-| 대시보드 | TODO |
-| 학습 기록 | TODO |
-| 프로젝트 | TODO |
-| 지원 현황 | TODO |
-| AI 도우미 | TODO |
-| 이력서 관리 | TODO |
-| 모바일 (375px) | TODO |
+| 랜딩 페이지 | 회원가입 | 로그인 |
+| --- | --- | --- |
+| ![랜딩 페이지](./docs/images/landing.png) | ![회원가입](./docs/images/register.png) | ![로그인](./docs/images/login.png) |
+
+### 로그인 이후
+
+| 대시보드 | 학습 기록 | 프로젝트 |
+| --- | --- | --- |
+| ![대시보드](./docs/images/dashboard.png) | ![학습 기록](./docs/images/studies.png) | ![프로젝트](./docs/images/projects.png) |
+
+| 지원 현황 | AI 도우미 | 이력서 관리 |
+| --- | --- | --- |
+| ![지원 현황](./docs/images/applications.png) | ![AI 도우미](./docs/images/ai.png) | ![이력서 관리](./docs/images/resume.png) |
+
+### 성공 / 실패 피드백 (Toast), 모바일
+
+| 성공 Toast | 실패 Toast | 모바일 (375px) |
+| --- | --- | --- |
+| ![성공 토스트](./docs/images/toast-success.png) | ![실패 토스트](./docs/images/toast-error.png) | ![모바일](./docs/images/mobile.png) |
 
 ---
 
@@ -652,8 +660,6 @@ flowchart TD
 ## Contact
 
 - GitHub: [github.com/gajigaji04](https://github.com/gajigaji04)
-- Email: TODO
-- Portfolio / Blog: TODO
 
 ---
 
