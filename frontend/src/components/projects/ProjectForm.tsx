@@ -1,8 +1,23 @@
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import Input from "../common/Input";
 import Button from "../common/Button";
 import styles from "./ProjectForm.module.css";
 
+const urlField = z
+  .union([z.literal(""), z.string().url("올바른 URL 형식이 아닙니다.")])
+  .optional();
+
+const projectSchema = z.object({
+  title: z.string().min(1, "프로젝트 이름을 입력해주세요."),
+  description: z.string().min(1, "설명을 입력해주세요."),
+  techStack: z.string().min(1, "기술 스택을 입력해주세요."),
+  githubUrl: urlField,
+  deployUrl: urlField,
+});
+
+type ProjectFormValues = z.infer<typeof projectSchema>;
 type ProjectFormData = {
   title: string;
   description: string;
@@ -18,57 +33,63 @@ type ProjectFormProps = {
 };
 
 export default function ProjectForm({ onSubmit, onCancel, initialData }: ProjectFormProps) {
-  const [title, setTitle] = useState(initialData?.title ?? "");
-  const [description, setDescription] = useState(initialData?.description ?? "");
-  const [techStack, setTechStack] = useState(initialData?.techStack ?? "");
-  const [githubUrl, setGithubUrl] = useState(initialData?.githubUrl ?? "");
-  const [deployUrl, setDeployUrl] = useState(initialData?.deployUrl ?? "");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ProjectFormValues>({
+    resolver: zodResolver(projectSchema),
+    defaultValues: initialData ?? {
+      title: "",
+      description: "",
+      techStack: "",
+      githubUrl: "",
+      deployUrl: "",
+    },
+  });
+
+  const submit = (values: ProjectFormValues) => {
+    onSubmit({
+      title: values.title,
+      description: values.description,
+      techStack: values.techStack,
+      githubUrl: values.githubUrl || undefined,
+      deployUrl: values.deployUrl || undefined,
+    });
+  };
 
   return (
-    <form
-      className={styles.form}
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!title.trim()) return;
-        onSubmit({
-          title,
-          description,
-          techStack,
-          githubUrl: githubUrl || undefined,
-          deployUrl: deployUrl || undefined,
-        });
-      }}
-    >
+    <form noValidate className={styles.form} onSubmit={(e) => void handleSubmit(submit)(e)}>
       <Input
         label="프로젝트 이름"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
         placeholder="프로젝트 이름"
+        error={errors.title?.message}
+        {...register("title")}
       />
       <Input
         label="설명"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
         placeholder="프로젝트 설명"
+        error={errors.description?.message}
+        {...register("description")}
       />
       <Input
         label="기술 스택"
-        value={techStack}
-        onChange={(e) => setTechStack(e.target.value)}
         placeholder="예: React, TypeScript, Node.js"
+        error={errors.techStack?.message}
+        {...register("techStack")}
       />
       <div className={styles.row}>
         <Input
           label="GitHub URL"
-          value={githubUrl}
-          onChange={(e) => setGithubUrl(e.target.value)}
           placeholder="https://github.com/..."
+          error={errors.githubUrl?.message}
+          {...register("githubUrl")}
         />
         <Input
           label="배포 URL"
-          value={deployUrl}
-          onChange={(e) => setDeployUrl(e.target.value)}
           placeholder="https://..."
+          error={errors.deployUrl?.message}
+          {...register("deployUrl")}
         />
       </div>
       <div className={styles.actions}>

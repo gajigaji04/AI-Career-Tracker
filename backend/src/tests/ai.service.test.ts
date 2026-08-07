@@ -13,6 +13,7 @@ vi.mock("../prisma/prisma", () => ({
     application: { findFirst: vi.fn() },
     user: { findUnique: vi.fn() },
     project: { findMany: vi.fn() },
+    study: { findMany: vi.fn() },
     aiAnalysis: { create: vi.fn(), findMany: vi.fn() },
   },
 }));
@@ -28,6 +29,7 @@ import {
 const mockApplication = vi.mocked(prisma.application);
 const mockUser = vi.mocked(prisma.user);
 const mockProject = vi.mocked(prisma.project);
+const mockStudy = vi.mocked(prisma.study);
 const mockAiAnalysis = vi.mocked(prisma.aiAnalysis);
 
 const MODEL = "llama-3.3-70b-versatile";
@@ -53,6 +55,11 @@ const fakeUser = { name: "테스터" };
 const fakeProjects = [
   { title: "AI CareerHub", description: "취업 관리 플랫폼", techStack: ["React", "Node.js"] },
   { title: "Todo App", description: "할일 관리 앱", techStack: ["React", "Vue"] },
+];
+
+const fakeStudies = [
+  { title: "TypeScript 제네릭 정리", category: "프론트엔드" },
+  { title: "PostgreSQL 인덱스 튜닝", category: "백엔드" },
 ];
 
 const fakeAiAnalysis = {
@@ -91,6 +98,7 @@ describe("AiService", () => {
       mockApplication.findFirst.mockResolvedValue(fakeApplication as never);
       mockUser.findUnique.mockResolvedValue(fakeUser as never);
       mockProject.findMany.mockResolvedValue(fakeProjects as never);
+      mockStudy.findMany.mockResolvedValue(fakeStudies as never);
       mockCreate.mockResolvedValue(
         fakeCompletion("생성된 자기소개서 내용") as never,
       );
@@ -123,10 +131,56 @@ describe("AiService", () => {
       });
     });
 
+    it("최근 학습 기록을 프롬프트에 포함해야 한다", async () => {
+      mockApplication.findFirst.mockResolvedValue(fakeApplication as never);
+      mockUser.findUnique.mockResolvedValue(fakeUser as never);
+      mockProject.findMany.mockResolvedValue(fakeProjects as never);
+      mockStudy.findMany.mockResolvedValue(fakeStudies as never);
+      mockCreate.mockResolvedValue(fakeCompletion("내용") as never);
+      mockAiAnalysis.create.mockResolvedValue(fakeAiAnalysis as never);
+
+      await generateCoverLetter(USER_ID, APPLICATION_ID);
+
+      expect(mockStudy.findMany).toHaveBeenCalledWith({
+        where: { userId: USER_ID },
+        orderBy: { studyDate: "desc" },
+        take: 5,
+      });
+
+      const promptContent = (
+        mockCreate.mock.calls[0]?.[0] as { messages: { content: string }[] }
+      ).messages[0]?.content ?? "";
+      expect(promptContent).toContain("TypeScript 제네릭 정리");
+      expect(promptContent).toContain("PostgreSQL 인덱스 튜닝");
+    });
+
+    it("등록된 학습 기록이 없어도 정상 생성되어야 한다", async () => {
+      mockApplication.findFirst.mockResolvedValue(fakeApplication as never);
+      mockUser.findUnique.mockResolvedValue(fakeUser as never);
+      mockProject.findMany.mockResolvedValue(fakeProjects as never);
+      mockStudy.findMany.mockResolvedValue([] as never);
+      mockCreate.mockResolvedValue(fakeCompletion("내용") as never);
+      mockAiAnalysis.create.mockResolvedValue(fakeAiAnalysis as never);
+
+      await generateCoverLetter(USER_ID, APPLICATION_ID);
+
+      expect(mockCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          messages: [
+            {
+              role: "user",
+              content: expect.stringContaining("등록된 학습 기록 없음"),
+            },
+          ],
+        }),
+      );
+    });
+
     it("등록된 프로젝트가 없어도 정상 생성되어야 한다", async () => {
       mockApplication.findFirst.mockResolvedValue(fakeApplication as never);
       mockUser.findUnique.mockResolvedValue(fakeUser as never);
       mockProject.findMany.mockResolvedValue([] as never);
+      mockStudy.findMany.mockResolvedValue(fakeStudies as never);
       mockCreate.mockResolvedValue(fakeCompletion("내용") as never);
       mockAiAnalysis.create.mockResolvedValue(fakeAiAnalysis as never);
 
@@ -148,6 +202,7 @@ describe("AiService", () => {
       mockApplication.findFirst.mockResolvedValue(fakeApplication as never);
       mockUser.findUnique.mockResolvedValue(fakeUser as never);
       mockProject.findMany.mockResolvedValue(fakeProjects as never);
+      mockStudy.findMany.mockResolvedValue(fakeStudies as never);
       mockCreate.mockResolvedValue({ choices: [] } as never);
       mockAiAnalysis.create.mockResolvedValue(fakeAiAnalysis as never);
 
@@ -175,6 +230,7 @@ describe("AiService", () => {
     it("면접 질문을 생성하고 중복 없는 기술스택으로 프롬프트를 구성해야 한다", async () => {
       mockApplication.findFirst.mockResolvedValue(fakeApplication as never);
       mockProject.findMany.mockResolvedValue(fakeProjects as never);
+      mockStudy.findMany.mockResolvedValue(fakeStudies as never);
       mockCreate.mockResolvedValue(fakeCompletion("Q1. ...\nA1. ...") as never);
       mockAiAnalysis.create.mockResolvedValue({
         ...fakeAiAnalysis,
@@ -210,9 +266,50 @@ describe("AiService", () => {
       });
     });
 
+    it("최근 학습 주제를 중복 없이 프롬프트에 포함해야 한다", async () => {
+      mockApplication.findFirst.mockResolvedValue(fakeApplication as never);
+      mockProject.findMany.mockResolvedValue(fakeProjects as never);
+      // 카테고리가 같은 학습 기록 2개 → 프롬프트엔 한 번만 나와야 함
+      mockStudy.findMany.mockResolvedValue([
+        { title: "A", category: "백엔드" },
+        { title: "B", category: "백엔드" },
+      ] as never);
+      mockCreate.mockResolvedValue(fakeCompletion("Q1. ...\nA1. ...") as never);
+      mockAiAnalysis.create.mockResolvedValue(fakeAiAnalysis as never);
+
+      await generateInterviewQuestions(USER_ID, APPLICATION_ID);
+
+      expect(mockStudy.findMany).toHaveBeenCalledWith({
+        where: { userId: USER_ID },
+        orderBy: { studyDate: "desc" },
+        take: 5,
+      });
+
+      const promptContent = (
+        mockCreate.mock.calls[0]?.[0] as { messages: { content: string }[] }
+      ).messages[0]?.content ?? "";
+      expect(promptContent.match(/백엔드/g)).toHaveLength(1);
+    });
+
+    it("등록된 학습 기록이 없으면 '없음'으로 프롬프트를 구성해야 한다", async () => {
+      mockApplication.findFirst.mockResolvedValue(fakeApplication as never);
+      mockProject.findMany.mockResolvedValue(fakeProjects as never);
+      mockStudy.findMany.mockResolvedValue([] as never);
+      mockCreate.mockResolvedValue(fakeCompletion("...") as never);
+      mockAiAnalysis.create.mockResolvedValue(fakeAiAnalysis as never);
+
+      await generateInterviewQuestions(USER_ID, APPLICATION_ID);
+
+      const promptContent = (
+        mockCreate.mock.calls[0]?.[0] as { messages: { content: string }[] }
+      ).messages[0]?.content ?? "";
+      expect(promptContent).toContain("지원자의 최근 학습 주제: 없음");
+    });
+
     it("등록된 프로젝트가 없으면 '일반 개발'로 프롬프트를 구성해야 한다", async () => {
       mockApplication.findFirst.mockResolvedValue(fakeApplication as never);
       mockProject.findMany.mockResolvedValue([] as never);
+      mockStudy.findMany.mockResolvedValue(fakeStudies as never);
       mockCreate.mockResolvedValue(fakeCompletion("...") as never);
       mockAiAnalysis.create.mockResolvedValue(fakeAiAnalysis as never);
 

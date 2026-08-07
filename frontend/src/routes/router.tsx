@@ -1,51 +1,71 @@
+import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router-dom";
 
 import RootLayout from "../components/layouts/RootLayout";
-import LandingPage from "../pages/LandingPage";
-import LoginPage from "../pages/LoginPage";
-import RegisterPage from "../pages/RegisterPage";
-import ForgotPasswordPage from "../pages/ForgotPasswordPage";
-import ResetPasswordPage from "../pages/ResetPasswordPage";
+import Spinner from "../components/common/Spinner";
 import NotFoundPage from "../pages/NotFoundPage";
-import DashboardPage from "../pages/DashboardPage";
-import StudiesPage from "../pages/StudiesPage";
-import ProjectsPage from "../pages/ProjectsPage";
-import ApplicationsPage from "../pages/ApplicationsPage";
-import AIPage from "../pages/AIPage";
-import ResumePage from "../pages/ResumePage";
+
+const LandingPage = lazy(() => import("../pages/LandingPage"));
+const LoginPage = lazy(() => import("../pages/LoginPage"));
+const RegisterPage = lazy(() => import("../pages/RegisterPage"));
+const ForgotPasswordPage = lazy(() => import("../pages/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("../pages/ResetPasswordPage"));
+const DashboardPage = lazy(() => import("../pages/DashboardPage"));
+const StudiesPage = lazy(() => import("../pages/StudiesPage"));
+const ProjectsPage = lazy(() => import("../pages/ProjectsPage"));
+const ApplicationsPage = lazy(() => import("../pages/ApplicationsPage"));
+const AIPage = lazy(() => import("../pages/AIPage"));
+const ResumePage = lazy(() => import("../pages/ResumePage"));
+
+const PageFallback = () => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: "100svh",
+    }}
+  >
+    <Spinner size={28} />
+  </div>
+);
+
+const withSuspense = (element: React.ReactNode) => (
+  <Suspense fallback={<PageFallback />}>{element}</Suspense>
+);
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <LandingPage />,
+    element: withSuspense(<LandingPage />),
     errorElement: <NotFoundPage />,
   },
   {
     path: "/login",
-    element: <LoginPage />,
+    element: withSuspense(<LoginPage />),
   },
   {
     path: "/register",
-    element: <RegisterPage />,
+    element: withSuspense(<RegisterPage />),
   },
   {
     path: "/forgot-password",
-    element: <ForgotPasswordPage />,
+    element: withSuspense(<ForgotPasswordPage />),
   },
   {
     path: "/reset-password",
-    element: <ResetPasswordPage />,
+    element: withSuspense(<ResetPasswordPage />),
   },
   {
     path: "/app",
     element: <RootLayout />,
     children: [
-      { path: "dashboard", element: <DashboardPage /> },
-      { path: "studies", element: <StudiesPage /> },
-      { path: "projects", element: <ProjectsPage /> },
-      { path: "applications", element: <ApplicationsPage /> },
-      { path: "ai", element: <AIPage /> },
-      { path: "resumes", element: <ResumePage /> },
+      { path: "dashboard", element: withSuspense(<DashboardPage />) },
+      { path: "studies", element: withSuspense(<StudiesPage />) },
+      { path: "projects", element: withSuspense(<ProjectsPage />) },
+      { path: "applications", element: withSuspense(<ApplicationsPage />) },
+      { path: "ai", element: withSuspense(<AIPage />) },
+      { path: "resumes", element: withSuspense(<ResumePage />) },
     ],
   },
   {

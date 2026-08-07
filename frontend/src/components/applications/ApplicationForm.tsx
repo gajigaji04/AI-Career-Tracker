@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import Input from "../common/Input";
 import Select from "../common/Select";
 import Button from "../common/Button";
@@ -13,6 +15,14 @@ const STATUS_OPTIONS: { value: ApplicationStatus; label: string }[] = [
   { value: "REJECTED", label: "불합격" },
 ];
 
+const applicationSchema = z.object({
+  companyName: z.string().min(1, "회사명을 입력해주세요."),
+  position: z.string().min(1, "포지션을 입력해주세요."),
+  status: z.enum(["APPLIED", "DOCUMENT_PASS", "INTERVIEW", "FINAL_PASS", "REJECTED"]),
+  memo: z.string().optional(),
+});
+
+type ApplicationFormValues = z.infer<typeof applicationSchema>;
 type ApplicationFormData = {
   companyName: string;
   position: string;
@@ -31,45 +41,41 @@ export default function ApplicationForm({
   onCancel,
   initialData,
 }: ApplicationFormProps) {
-  const [companyName, setCompanyName] = useState(initialData?.companyName ?? "");
-  const [position, setPosition] = useState(initialData?.position ?? "");
-  const [status, setStatus] = useState<ApplicationStatus>(initialData?.status ?? "APPLIED");
-  const [memo, setMemo] = useState(initialData?.memo ?? "");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ApplicationFormValues>({
+    resolver: zodResolver(applicationSchema),
+    defaultValues: initialData ?? { companyName: "", position: "", status: "APPLIED", memo: "" },
+  });
+
+  const submit = (values: ApplicationFormValues) => {
+    onFormSubmit({ ...values, memo: values.memo || undefined });
+  };
 
   return (
-    <form
-      className={styles.form}
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!companyName.trim() || !position.trim()) return;
-        onFormSubmit({ companyName, position, status, memo: memo || undefined });
-      }}
-    >
+    <form noValidate className={styles.form} onSubmit={(e) => void handleSubmit(submit)(e)}>
       <div className={styles.row}>
         <Input
           label="회사명"
-          value={companyName}
-          onChange={(e) => setCompanyName(e.target.value)}
           placeholder="회사명"
+          error={errors.companyName?.message}
+          {...register("companyName")}
         />
         <Input
           label="포지션"
-          value={position}
-          onChange={(e) => setPosition(e.target.value)}
           placeholder="포지션"
+          error={errors.position?.message}
+          {...register("position")}
         />
       </div>
-      <Select
-        label="상태"
-        value={status}
-        onChange={(e) => setStatus(e.target.value as ApplicationStatus)}
-        options={STATUS_OPTIONS}
-      />
+      <Select label="상태" options={STATUS_OPTIONS} {...register("status")} />
       <Input
         label="메모"
-        value={memo}
-        onChange={(e) => setMemo(e.target.value)}
         placeholder="메모 (선택)"
+        error={errors.memo?.message}
+        {...register("memo")}
       />
       <div className={styles.actions}>
         {onCancel && (

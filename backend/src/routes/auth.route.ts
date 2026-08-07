@@ -2,6 +2,7 @@ import { Router } from "express";
 import * as authController from "../controllers/auth.controller";
 import { authenticate } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validate.middleware";
+import { authLimiter } from "../middlewares/rateLimit.middleware";
 import {
   registerSchema,
   forgotPasswordSchema,
@@ -45,7 +46,7 @@ const router = Router();
  *       400:
  *         description: 잘못된 요청
  */
-router.post("/register", validate(registerSchema), authController.register);
+router.post("/register", authLimiter, validate(registerSchema), authController.register);
 
 /**
  * @swagger
@@ -75,7 +76,7 @@ router.post("/register", validate(registerSchema), authController.register);
  *       401:
  *         description: 인증 실패
  */
-router.post("/login", authController.login);
+router.post("/login", authLimiter, authController.login);
 
 /**
  * @swagger
@@ -143,6 +144,7 @@ router.get("/me", authenticate, authController.getMe);
  */
 router.post(
   "/forgot-password",
+  authLimiter,
   validate(forgotPasswordSchema),
   authController.forgotPassword,
 );
