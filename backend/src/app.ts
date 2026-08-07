@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import helmet from "helmet";
 
 import authRouter from "./routes/auth.route";
 import studyRouter from "./routes/study.route";
@@ -18,6 +19,9 @@ import { swaggerSpec } from "./config/swagger";
 
 const app = express();
 
+// CSP is already applied at the Nginx edge for the frontend; disabling it here avoids
+// breaking Swagger UI's inline script at /api-docs while keeping helmet's other headers.
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({
   origin: process.env.ALLOWED_ORIGIN ?? "http://localhost:5173",
   credentials: true,

@@ -39,7 +39,11 @@ const options = {
     ],
   },
 
-  apis: [path.join(__dirname, "../routes/*.ts")],
+  // swagger-jsdoc's bundled glob (v9+) treats "\" as an escape char, not a path
+  // separator, so a Windows-style path silently matches nothing — normalize to "/".
+  // ".{ts,js}" covers both `npm run dev` (ts-node, .ts source) and the compiled
+  // production build (dist/, .js only).
+  apis: [path.join(__dirname, "../routes/*.{ts,js}").split(path.sep).join("/")],
 };
 
 export const swaggerSpec = swaggerJsdoc(options);
