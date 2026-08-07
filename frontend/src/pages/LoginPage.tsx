@@ -44,7 +44,11 @@ export default function LoginPage() {
           <p className={styles.success}>비밀번호가 재설정됐습니다. 새 비밀번호로 로그인해주세요.</p>
         )}
 
-        <form onSubmit={(e) => { e.preventDefault(); void handleSubmit(); }} className={styles.form}>
+        <form
+          noValidate
+          onSubmit={(e) => { e.preventDefault(); void handleSubmit(); }}
+          className={styles.form}
+        >
           <div className={styles.field}>
             <label className={styles.label}>이메일</label>
             <input

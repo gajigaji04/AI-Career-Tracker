@@ -160,7 +160,11 @@ export default function RegisterPage() {
           <p className={styles.subtitle}>몇 가지 정보만 입력하면 바로 시작할 수 있어요.</p>
         </div>
 
-        <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} className={styles.form}>
+        <form
+          noValidate
+          onSubmit={(e) => void handleSubmit(onSubmit)(e)}
+          className={styles.form}
+        >
           <div className={styles.field}>
             <label className={styles.label}>이메일</label>
             <input
