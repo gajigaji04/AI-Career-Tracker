@@ -47,6 +47,7 @@ const fakeUser = {
   name: "테스터",
   nickname: "테스트닉네임",
   createdAt: new Date(),
+  tokenVersion: 0,
 };
 
 beforeAll(async () => {
@@ -134,6 +135,63 @@ describe("POST /auth/login", () => {
 
     expect(res.status).toBe(401);
     expect(res.body.success).toBe(false);
+  });
+});
+
+describe("POST /auth/refresh + POST /auth/logout — 로그아웃 후 리프레시 토큰 무효화", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("로그인 → 로그아웃 → 로그아웃 전 발급받은 refreshToken으로 재발급 시도하면 401을 반환한다", async () => {
+    // 로그아웃은 브라우저 쿠키를 지우지만, 로그아웃 전에 이미 어딘가로 흘러나간
+    // refreshToken 값 자체는 여전히 "서명은 유효한 문자열"로 남아있을 수 있다.
+    // 그 상황(다른 기기/탈취된 토큰)을 재현하기 위해 agent(쿠키 자동관리) 대신
+    // 로그인 응답의 Set-Cookie에서 refreshToken 값을 직접 꺼내 별도로 보관한다.
+    mockUser.findUnique.mockResolvedValue(fakeUser as never);
+
+    const loginRes = await request(app)
+      .post("/auth/login")
+      .send({ email: fakeUser.email, password: "password1234" });
+    expect(loginRes.status).toBe(200);
+
+    const loginCookies = loginRes.headers["set-cookie"] as unknown as string[];
+    const staleRefreshCookie = loginCookies.find((c) => c.startsWith("refreshToken="))!;
+
+    // 로그아웃 처리 (별도 요청 — 이 요청에도 같은 refreshToken을 실어 보낸다)
+    mockUser.update.mockResolvedValue({ ...fakeUser, tokenVersion: 1 } as never);
+    const logoutRes = await request(app)
+      .post("/auth/logout")
+      .set("Cookie", [staleRefreshCookie]);
+    expect(logoutRes.status).toBe(200);
+    expect(mockUser.update).toHaveBeenCalledWith({
+      where: { id: fakeUser.id },
+      data: { tokenVersion: { increment: 1 } },
+    });
+
+    // 로그아웃으로 DB의 tokenVersion은 1이 됐는데, 들고 있는 건 tokenVersion 0으로
+    // 서명된 예전 refreshToken이므로 재발급 시도는 거부돼야 한다
+    mockUser.findUnique.mockResolvedValue({ ...fakeUser, tokenVersion: 1 } as never);
+
+    const refreshRes = await request(app)
+      .post("/auth/refresh")
+      .set("Cookie", [staleRefreshCookie]);
+    expect(refreshRes.status).toBe(401);
+  });
+
+  it("유효한 refreshToken이면 200과 함께 새 accessToken 쿠키를 내려준다", async () => {
+    mockUser.findUnique.mockResolvedValue(fakeUser as never);
+
+    const agent = request.agent(app);
+    await agent
+      .post("/auth/login")
+      .send({ email: fakeUser.email, password: "password1234" });
+
+    const res = await agent.post("/auth/refresh");
+
+    expect(res.status).toBe(200);
+    const cookies = res.headers["set-cookie"] as unknown as string[];
+    expect(cookies.some((c) => c.startsWith("accessToken="))).toBe(true);
   });
 });
 

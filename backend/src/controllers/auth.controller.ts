@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import * as authService from "../services/auth.service";
 import { AuthRequest } from "../middlewares/auth.middleware";
 
@@ -50,14 +51,29 @@ export const refresh = async (req: Request, res: Response) => {
     return;
   }
 
-  const { accessToken } = authService.refreshAccessToken(refreshToken);
+  const { accessToken } = await authService.refreshAccessToken(refreshToken);
 
   res.cookie("accessToken", accessToken, ACCESS_COOKIE_OPTS);
 
   res.status(200).json({ success: true });
 };
 
-export const logout = (_req: Request, res: Response) => {
+export const logout = async (req: Request, res: Response) => {
+  const refreshToken = req.cookies.refreshToken as string | undefined;
+
+  if (refreshToken) {
+    try {
+      // 만료된 리프레시 토큰이라도(서명은 유효) 무효화는 시도한다
+      const { userId } = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!, {
+        ignoreExpiration: true,
+      }) as { userId: string };
+
+      await authService.revokeRefreshTokens(userId);
+    } catch {
+      // 위조된 토큰이면 무효화할 대상이 없으므로 그냥 쿠키만 지우고 넘어감
+    }
+  }
+
   res.clearCookie("accessToken", { httpOnly: true, sameSite: "lax" });
   res.clearCookie("refreshToken", { httpOnly: true, sameSite: "lax" });
   res.status(200).json({ success: true });

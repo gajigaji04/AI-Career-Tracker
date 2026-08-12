@@ -10,5 +10,8 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
+RUN chown -R node:node /app
+USER node
+
 EXPOSE 3000
 CMD ["sh", "-c", "npx prisma migrate deploy --schema=src/prisma/schema.prisma && node dist/server.js"]

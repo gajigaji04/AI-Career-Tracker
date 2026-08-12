@@ -16,9 +16,14 @@ vi.mock("../config/s3", () => ({
   BUCKET: "test-bucket",
 }));
 
+vi.mock("@aws-sdk/s3-request-presigner", () => ({
+  getSignedUrl: vi.fn(),
+}));
+
 // ─── 2. mock 모듈 및 테스트 대상 import ──────────────────────────────────────
 import { prisma } from "../prisma/prisma";
 import { s3, BUCKET } from "../config/s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
   uploadResume,
   getResumes,
@@ -27,6 +32,7 @@ import {
 
 const mockResume = vi.mocked(prisma.resume);
 const mockS3Send = vi.mocked(s3.send);
+const mockGetSignedUrl = vi.mocked(getSignedUrl);
 
 // ─── 공통 더미 데이터 ─────────────────────────────────────────────────────────
 const USER_ID = "user-id-123";
@@ -121,17 +127,31 @@ describe("ResumeService", () => {
 
   // ── getResumes() ───────────────────────────────────────────────────────────
   describe("getResumes()", () => {
-    it("해당 유저의 이력서 목록을 버전 최신순으로 반환해야 한다", async () => {
-      const fakeList = [fakeResume];
-      mockResume.findMany.mockResolvedValue(fakeList as never);
+    it("해당 유저의 이력서 목록을, fileUrl을 서명된 URL로 바꿔서 반환해야 한다", async () => {
+      mockResume.findMany.mockResolvedValue([fakeResume] as never);
+      mockGetSignedUrl.mockResolvedValue("https://signed.example.com/resume.pdf?sig=abc" as never);
 
       const result = await getResumes(USER_ID);
 
-      expect(result).toEqual(fakeList);
+      expect(result).toEqual([
+        { ...fakeResume, fileUrl: "https://signed.example.com/resume.pdf?sig=abc" },
+      ]);
       expect(mockResume.findMany).toHaveBeenCalledWith({
         where: { userId: USER_ID },
         orderBy: { version: "desc" },
       });
+
+      // 5분짜리 서명 URL을 원본 S3 key로 발급하는지 확인
+      expect(mockGetSignedUrl).toHaveBeenCalledWith(
+        s3,
+        expect.objectContaining({
+          input: {
+            Bucket: BUCKET,
+            Key: `resumes/${USER_ID}/${FIXED_NOW}-resume.pdf`,
+          },
+        }),
+        { expiresIn: 300 },
+      );
     });
 
     it("이력서가 없으면 빈 배열을 반환해야 한다", async () => {
@@ -140,6 +160,7 @@ describe("ResumeService", () => {
       const result = await getResumes(USER_ID);
 
       expect(result).toEqual([]);
+      expect(mockGetSignedUrl).not.toHaveBeenCalled();
     });
   });
 

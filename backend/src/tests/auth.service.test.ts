@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { register, login } from "../services/auth.service";
+import {
+  register,
+  login,
+  refreshAccessToken,
+  revokeRefreshTokens,
+  resetPassword,
+} from "../services/auth.service";
 
 // ─── 1. 모듈 Mock 선언 ────────────────────────────────────────────────────────
 // vi.mock()은 파일 최상단에 위치해야 함 (hoisting 때문)
@@ -9,6 +15,7 @@ vi.mock("../prisma/prisma", () => ({
     user: {
       findUnique: vi.fn(),
       create: vi.fn(),
+      update: vi.fn(),
     },
   },
 }));
@@ -33,6 +40,7 @@ const fakeUser = {
   name: "테스터",
   nickname: "테스트닉네임",
   password: "hashed_password",
+  tokenVersion: 0,
 };
 
 // ─── 3. describe: 테스트 그룹 ─────────────────────────────────────────────────
@@ -143,7 +151,7 @@ describe("AuthService", () => {
         { expiresIn: "1h" },
       );
       expect(mockJwt.sign).toHaveBeenCalledWith(
-        { userId: fakeUser.id },
+        { userId: fakeUser.id, tokenVersion: fakeUser.tokenVersion },
         process.env.JWT_REFRESH_SECRET,
         { expiresIn: "30d" },
       );
@@ -167,6 +175,107 @@ describe("AuthService", () => {
 
       // 비밀번호 틀렸으므로 jwt.sign은 호출되지 않아야 함
       expect(mockJwt.sign).not.toHaveBeenCalled();
+    });
+  });
+
+  // ── refreshAccessToken() ──────────────────────────────────────────────────────
+  describe("refreshAccessToken()", () => {
+    it("tokenVersion이 일치하면 새 accessToken을 반환해야 한다", async () => {
+      mockJwt.verify.mockReturnValue({
+        userId: fakeUser.id,
+        tokenVersion: 0,
+      } as never);
+      mockPrismaUser.findUnique.mockResolvedValue(fakeUser as never);
+      mockJwt.sign.mockReturnValue("new.access.token" as never);
+
+      const result = await refreshAccessToken("some.refresh.token");
+
+      expect(result).toEqual({ accessToken: "new.access.token" });
+    });
+
+    it("서명 검증에 실패하면 401 에러를 던져야 한다", async () => {
+      mockJwt.verify.mockImplementation(() => {
+        throw new Error("invalid signature");
+      });
+
+      await expect(refreshAccessToken("bad.token")).rejects.toThrow(
+        "유효하지 않은 리프레시 토큰입니다.",
+      );
+    });
+
+    it("로그아웃 등으로 tokenVersion이 올라갔으면(불일치) 401 에러를 던져야 한다", async () => {
+      mockJwt.verify.mockReturnValue({
+        userId: fakeUser.id,
+        tokenVersion: 0,
+      } as never);
+      mockPrismaUser.findUnique.mockResolvedValue({
+        ...fakeUser,
+        tokenVersion: 1,
+      } as never);
+
+      await expect(refreshAccessToken("stale.refresh.token")).rejects.toThrow(
+        "유효하지 않은 리프레시 토큰입니다.",
+      );
+    });
+
+    it("유저가 존재하지 않으면 401 에러를 던져야 한다", async () => {
+      mockJwt.verify.mockReturnValue({
+        userId: "deleted-user",
+        tokenVersion: 0,
+      } as never);
+      mockPrismaUser.findUnique.mockResolvedValue(null);
+
+      await expect(refreshAccessToken("orphan.token")).rejects.toThrow(
+        "유효하지 않은 리프레시 토큰입니다.",
+      );
+    });
+  });
+
+  // ── revokeRefreshTokens() ─────────────────────────────────────────────────────
+  describe("revokeRefreshTokens()", () => {
+    it("해당 유저의 tokenVersion을 1 증가시켜야 한다", async () => {
+      mockPrismaUser.update.mockResolvedValue(fakeUser as never);
+
+      await revokeRefreshTokens(fakeUser.id);
+
+      expect(mockPrismaUser.update).toHaveBeenCalledWith({
+        where: { id: fakeUser.id },
+        data: { tokenVersion: { increment: 1 } },
+      });
+    });
+  });
+
+  // ── resetPassword() ───────────────────────────────────────────────────────────
+  describe("resetPassword()", () => {
+    it("비밀번호 변경과 동시에 tokenVersion을 증가시켜 기존 refresh token을 무효화해야 한다", async () => {
+      mockPrismaUser.findUnique.mockResolvedValue({
+        ...fakeUser,
+        passwordResetToken: "valid-token",
+        passwordResetTokenExpiresAt: new Date(Date.now() + 60 * 1000),
+      } as never);
+      mockBcrypt.hash.mockResolvedValue("new_hashed_password" as never);
+      mockPrismaUser.update.mockResolvedValue(fakeUser as never);
+
+      await resetPassword("valid-token", "newPassword123");
+
+      expect(mockPrismaUser.update).toHaveBeenCalledWith({
+        where: { id: fakeUser.id },
+        data: {
+          password: "new_hashed_password",
+          passwordResetToken: null,
+          passwordResetTokenExpiresAt: null,
+          tokenVersion: { increment: 1 },
+        },
+      });
+    });
+
+    it("만료되거나 존재하지 않는 토큰이면 400 에러를 던져야 한다", async () => {
+      mockPrismaUser.findUnique.mockResolvedValue(null);
+
+      await expect(resetPassword("bad-token", "newPassword123")).rejects.toThrow(
+        "유효하지 않거나 만료된 링크입니다.",
+      );
+      expect(mockPrismaUser.update).not.toHaveBeenCalled();
     });
   });
 });

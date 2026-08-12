@@ -76,7 +76,7 @@ export const login = async (email: string, password: string) => {
   );
 
   const refreshToken = jwt.sign(
-    { userId: user.id },
+    { userId: user.id, tokenVersion: user.tokenVersion },
     process.env.JWT_REFRESH_SECRET!,
     { expiresIn: "30d" },
   );
@@ -92,23 +92,40 @@ export const login = async (email: string, password: string) => {
   };
 };
 
-export const refreshAccessToken = (refreshToken: string) => {
+export const refreshAccessToken = async (refreshToken: string) => {
+  let payload: { userId: string; tokenVersion: number };
+
   try {
-    const payload = jwt.verify(
-      refreshToken,
-      process.env.JWT_REFRESH_SECRET!,
-    ) as { userId: string };
-
-    const newAccessToken = jwt.sign(
-      { userId: payload.userId },
-      process.env.JWT_SECRET!,
-      { expiresIn: "1h" },
-    );
-
-    return { accessToken: newAccessToken };
+    payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!) as {
+      userId: string;
+      tokenVersion: number;
+    };
   } catch {
     throw new AppError("유효하지 않은 리프레시 토큰입니다.", 401);
   }
+
+  const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+
+  // tokenVersion이 달라졌다는 건 로그아웃 등으로 이 리프레시 토큰이 무효화됐다는 뜻
+  if (!user || user.tokenVersion !== payload.tokenVersion) {
+    throw new AppError("유효하지 않은 리프레시 토큰입니다.", 401);
+  }
+
+  const newAccessToken = jwt.sign(
+    { userId: payload.userId },
+    process.env.JWT_SECRET!,
+    { expiresIn: "1h" },
+  );
+
+  return { accessToken: newAccessToken };
+};
+
+// 발급된 모든 리프레시 토큰을 한 번에 무효화 (로그아웃 시 호출)
+export const revokeRefreshTokens = async (userId: string) => {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { tokenVersion: { increment: 1 } },
+  });
 };
 
 export const requestPasswordReset = async (email: string) => {
@@ -157,6 +174,9 @@ export const resetPassword = async (token: string, newPassword: string) => {
       password: hashedPassword,
       passwordResetToken: null,
       passwordResetTokenExpiresAt: null,
+      // 비밀번호가 유출돼서 재설정하는 상황일 수 있으므로, 그 전에 발급된
+      // refresh token은 새 비밀번호와 무관하게 전부 무효화한다.
+      tokenVersion: { increment: 1 },
     },
   });
 };
