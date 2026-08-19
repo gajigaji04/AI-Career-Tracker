@@ -68,6 +68,20 @@
   transition: background 0.15s, color 0.15s;
 }
 
+.linkIcon {
+  display: inline-flex;
+  width: 18px;
+  justify-content: center;
+  font-size: 14px;
+  filter: grayscale(1) opacity(0.7);
+  transition: filter 0.15s;
+}
+
+.active .linkIcon,
+.link:hover .linkIcon {
+  filter: none;
+}
+
 .link:hover {
   background: var(--accent-bg);
   color: var(--accent);

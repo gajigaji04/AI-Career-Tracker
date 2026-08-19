@@ -1,16 +1,45 @@
 .card {
+  --tone-color: var(--accent);
+  --tone-bg: var(--accent-bg);
+
+  position: relative;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 24px 28px;
+  padding: 22px 28px 24px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  transition: box-shadow 0.2s;
+  gap: 6px;
+  overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--tone-color);
 }
 
 .card:hover {
   box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+
+.violet {
+  --tone-color: var(--accent);
+  --tone-bg: var(--accent-bg);
+}
+
+.blue {
+  --tone-color: #3b82f6;
+  --tone-bg: rgba(59, 130, 246, 0.1);
+}
+
+.green {
+  --tone-color: #16a34a;
+  --tone-bg: rgba(34, 197, 94, 0.1);
 }
 
 .headerRow {
@@ -33,7 +62,8 @@
   width: 32px;
   height: 32px;
   border-radius: var(--radius-sm);
-  background: var(--accent-bg);
+  background: var(--tone-bg);
+  color: var(--tone-color);
   font-size: 15px;
 }
 
@@ -43,4 +73,9 @@
   color: var(--text-h);
   letter-spacing: -1.5px;
   line-height: 1;
+}
+
+.hint {
+  font-size: 12.5px;
+  color: var(--text-muted);
 }

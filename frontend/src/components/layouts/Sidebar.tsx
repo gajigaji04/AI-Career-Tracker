@@ -2,12 +2,12 @@ import { NavLink } from "react-router-dom";
 import styles from "./Sidebar.module.css";
 
 const NAV_ITEMS = [
-  { to: "/app/dashboard", label: "Dashboard" },
-  { to: "/app/studies", label: "Studies" },
-  { to: "/app/projects", label: "Projects" },
-  { to: "/app/applications", label: "Applications" },
-  { to: "/app/ai", label: "AI 도우미" },
-  { to: "/app/resumes", label: "이력서" },
+  { to: "/app/dashboard", label: "대시보드", icon: "🏠" },
+  { to: "/app/studies", label: "학습 기록", icon: "📚" },
+  { to: "/app/projects", label: "프로젝트", icon: "🗂️" },
+  { to: "/app/applications", label: "지원 현황", icon: "📈" },
+  { to: "/app/ai", label: "AI 도우미", icon: "✨" },
+  { to: "/app/resumes", label: "이력서", icon: "📄" },
 ];
 
 type SidebarProps = {
@@ -24,7 +24,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           <span className={styles.logoIcon}>✦</span>
           CareerHub
         </span>
-        {NAV_ITEMS.map(({ to, label }) => (
+        {NAV_ITEMS.map(({ to, label, icon }) => (
           <NavLink
             key={to}
             to={to}
@@ -33,6 +33,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               `${styles.link} ${isActive ? styles.active : ""}`
             }
           >
+            <span className={styles.linkIcon} aria-hidden="true">{icon}</span>
             {label}
           </NavLink>
         ))}
