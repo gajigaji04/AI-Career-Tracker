@@ -9,6 +9,7 @@ const LandingPage = lazy(() => import("../pages/LandingPage"));
 const LoginPage = lazy(() => import("../pages/LoginPage"));
 const RegisterPage = lazy(() => import("../pages/RegisterPage"));
 const ForgotPasswordPage = lazy(() => import("../pages/ForgotPasswordPage"));
+const FindEmailPage = lazy(() => import("../pages/FindEmailPage"));
 const ResetPasswordPage = lazy(() => import("../pages/ResetPasswordPage"));
 const DashboardPage = lazy(() => import("../pages/DashboardPage"));
 const StudiesPage = lazy(() => import("../pages/StudiesPage"));
@@ -51,6 +52,10 @@ export const router = createBrowserRouter([
   {
     path: "/forgot-password",
     element: withSuspense(<ForgotPasswordPage />),
+  },
+  {
+    path: "/find-email",
+    element: withSuspense(<FindEmailPage />),
   },
   {
     path: "/reset-password",

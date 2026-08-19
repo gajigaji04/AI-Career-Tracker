@@ -314,6 +314,8 @@ erDiagram
 | POST | `/auth/refresh` | Access Token 재발급 | ✗ (Refresh Token) |
 | POST | `/auth/forgot-password` | 비밀번호 재설정 이메일 발송 | ✗ |
 | POST | `/auth/reset-password` | 토큰으로 비밀번호 재설정 | ✗ |
+| POST | `/auth/find-email/request` | 휴대폰 번호로 아이디(이메일) 찾기 인증번호 발송 | ✗ |
+| POST | `/auth/find-email/verify` | 인증번호 확인 후 이메일 반환 | ✗ |
 | GET | `/auth/me` | 내 정보 조회 | ✓ |
 | GET / POST | `/studies` | 학습 기록 목록 조회 / 생성 | ✓ |
 | PATCH / DELETE | `/studies/:id` | 학습 기록 수정 / 삭제 | ✓ |
@@ -404,6 +406,9 @@ docker compose up -d
 | `GROQ_API_KEY` | AI 분석(Groq) API 키 |
 | `RESEND_API_KEY` | 이메일 발송(Resend) API 키 |
 | `RESEND_FROM_EMAIL` | 이메일 발신 주소 |
+| `SOLAPI_API_KEY` | 문자 발송(Solapi) API 키 (미설정 시 로그로 대체) |
+| `SOLAPI_API_SECRET` | 문자 발송(Solapi) API 시크릿 |
+| `SOLAPI_SENDER_NUMBER` | 문자 발신 번호 |
 | `AWS_REGION` | S3 리전 |
 | `AWS_ACCESS_KEY_ID` | S3 접근 키 |
 | `AWS_SECRET_ACCESS_KEY` | S3 시크릿 키 |

@@ -50,7 +50,12 @@ export default function LoginPage() {
           className={styles.form}
         >
           <div className={styles.field}>
-            <label className={styles.label}>이메일</label>
+            <div className={styles.labelRow}>
+              <label className={styles.label}>이메일</label>
+              <Link to="/find-email" className={styles.forgotLink}>
+                아이디 찾기
+              </Link>
+            </div>
             <input
               type="email"
               placeholder="example@email.com"

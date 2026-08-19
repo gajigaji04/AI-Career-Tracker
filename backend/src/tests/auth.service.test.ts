@@ -94,6 +94,7 @@ describe("AuthService", () => {
           password: "hashed_password",
           name: registerDto.name,
           nickname: registerDto.nickname,
+          phone: null,
           jobTitle: null,
           experienceLevel: null,
           yearsOfExperience: null,

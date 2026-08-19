@@ -94,6 +94,24 @@ export const resetPassword = async (req: Request, res: Response) => {
   res.status(200).json({ success: true, message: "비밀번호가 재설정되었습니다." });
 };
 
+export const requestFindEmail = async (req: Request, res: Response) => {
+  await authService.requestFindEmail(req.body.phone as string);
+
+  res.status(200).json({
+    success: true,
+    message: "입력하신 번호가 가입되어 있다면, 인증번호를 발송했습니다.",
+  });
+};
+
+export const verifyFindEmail = async (req: Request, res: Response) => {
+  const { email } = await authService.verifyFindEmail(
+    req.body.phone as string,
+    req.body.code as string,
+  );
+
+  res.status(200).json({ success: true, data: { email } });
+};
+
 export const getMe = async (req: AuthRequest, res: Response) => {
   const user = await authService.getMe(req.userId!);
 

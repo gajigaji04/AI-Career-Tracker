@@ -62,6 +62,11 @@ const registerSchema = z
     passwordConfirm: z.string().min(1, "비밀번호를 다시 입력해주세요."),
     name: z.string().min(1, "이름을 입력해주세요."),
     nickname: z.string().min(1, "닉네임을 입력해주세요."),
+    phone: z
+      .string()
+      .regex(/^01[0-9]{8,9}$/, "휴대폰 번호 형식이 올바르지 않습니다. (예: 01012345678)")
+      .optional()
+      .or(z.literal("")),
     jobTitle: z.string().optional(),
     experienceLevel: z.string().optional(),
     yearsOfExperience: z.string().optional(),
@@ -137,6 +142,7 @@ export default function RegisterPage() {
         password: values.password,
         name: values.name,
         nickname: values.nickname,
+        phone: values.phone || undefined,
         jobTitle: values.jobTitle || undefined,
         experienceLevel: values.experienceLevel
           ? (values.experienceLevel as ExperienceLevel)
@@ -244,6 +250,20 @@ export default function RegisterPage() {
                 <p className={styles.fieldError}>{errors.nickname.message}</p>
               )}
             </div>
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label}>휴대폰 번호 (선택)</label>
+            <input
+              type="tel"
+              placeholder="01012345678"
+              className={styles.input}
+              {...register("phone")}
+            />
+            {errors.phone && <p className={styles.fieldError}>{errors.phone.message}</p>}
+            <p className={styles.passwordHint}>
+              등록해두면 이메일(아이디)을 잊었을 때 문자로 인증 후 찾을 수 있습니다.
+            </p>
           </div>
 
           <div className={styles.divider}>
