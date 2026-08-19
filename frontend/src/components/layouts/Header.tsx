@@ -21,7 +21,12 @@ export default function Header({ onMenuClick }: HeaderProps) {
       <button className={styles.menuBtn} onClick={onMenuClick} aria-label="메뉴 열기">
         ☰
       </button>
-      <span className={styles.name}>{data?.data?.name}</span>
+      <div className={styles.user}>
+        <span className={styles.avatar} aria-hidden="true">
+          {data?.data?.name?.trim().charAt(0) ?? "?"}
+        </span>
+        <span className={styles.name}>{data?.data?.name}</span>
+      </div>
       <button className={styles.logoutBtn} onClick={handleLogout}>
         로그아웃
       </button>
