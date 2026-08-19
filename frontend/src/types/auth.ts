@@ -15,6 +15,7 @@ export interface RegisterRequest {
   password: string;
   name: string;
   nickname: string;
+  phone?: string;
   jobTitle?: string;
   experienceLevel?: ExperienceLevel;
   yearsOfExperience?: number;

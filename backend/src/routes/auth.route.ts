@@ -7,6 +7,8 @@ import {
   registerSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  findEmailRequestSchema,
+  findEmailVerifySchema,
 } from "../validations/auth.validation";
 
 const router = Router();
@@ -179,6 +181,69 @@ router.post(
   "/reset-password",
   validate(resetPasswordSchema),
   authController.resetPassword,
+);
+
+/**
+ * @swagger
+ * /auth/find-email/request:
+ *   post:
+ *     summary: 휴대폰 번호로 아이디(이메일) 찾기 인증번호 발송
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - phone
+ *             properties:
+ *               phone:
+ *                 type: string
+ *                 example: "01012345678"
+ *     responses:
+ *       200:
+ *         description: 인증번호 발송 요청 처리됨 (번호 등록 여부와 무관하게 항상 200)
+ */
+router.post(
+  "/find-email/request",
+  authLimiter,
+  validate(findEmailRequestSchema),
+  authController.requestFindEmail,
+);
+
+/**
+ * @swagger
+ * /auth/find-email/verify:
+ *   post:
+ *     summary: 인증번호 확인 후 이메일 반환
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - phone
+ *               - code
+ *             properties:
+ *               phone:
+ *                 type: string
+ *               code:
+ *                 type: string
+ *                 example: "123456"
+ *     responses:
+ *       200:
+ *         description: 인증 성공, 이메일 반환
+ *       400:
+ *         description: 인증번호가 올바르지 않거나 만료됨
+ */
+router.post(
+  "/find-email/verify",
+  authLimiter,
+  validate(findEmailVerifySchema),
+  authController.verifyFindEmail,
 );
 
 export default router;

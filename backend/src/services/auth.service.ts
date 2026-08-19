@@ -5,16 +5,19 @@ import { Resend } from "resend";
 import { prisma } from "../prisma/prisma";
 import { AppError } from "../errors/AppError";
 import { logger } from "../config/logger";
+import { sendSms } from "./sms.service";
 import type { ExperienceLevel } from "@prisma/client";
 
 const getResendClient = () => new Resend(process.env.RESEND_API_KEY);
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
+const PHONE_CODE_TTL_MS = 5 * 60 * 1000;
 
 interface RegisterDto {
   email: string;
   password: string;
   name: string;
   nickname: string;
+  phone?: string;
   jobTitle?: string;
   experienceLevel?: ExperienceLevel;
   yearsOfExperience?: number;
@@ -26,6 +29,7 @@ export const register = async ({
   password,
   name,
   nickname,
+  phone,
   jobTitle,
   experienceLevel,
   yearsOfExperience,
@@ -45,6 +49,7 @@ export const register = async ({
       password: hashedPassword,
       name,
       nickname,
+      phone: phone ?? null,
       jobTitle: jobTitle ?? null,
       experienceLevel: experienceLevel ?? null,
       yearsOfExperience: yearsOfExperience ?? null,
@@ -179,6 +184,50 @@ export const resetPassword = async (token: string, newPassword: string) => {
       tokenVersion: { increment: 1 },
     },
   });
+};
+
+// 아이디(이메일) 찾기: 휴대폰 번호로 6자리 인증번호 발송
+export const requestFindEmail = async (phone: string) => {
+  const user = await prisma.user.findUnique({ where: { phone } });
+
+  // 등록되지 않은 번호여도 항상 같은 방식으로 동작 (번호 등록 여부 노출 방지)
+  if (!user) return;
+
+  const code = crypto.randomInt(100000, 1000000).toString();
+  const expiresAt = new Date(Date.now() + PHONE_CODE_TTL_MS);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { phoneVerificationCode: code, phoneVerificationCodeExpiresAt: expiresAt },
+  });
+
+  try {
+    await sendSms(phone, `[CareerHub] 아이디 찾기 인증번호는 ${code}입니다. 5분 이내에 입력해주세요.`);
+  } catch (err) {
+    logger.error({ err }, "find-email SMS failed to send");
+  }
+};
+
+// 인증번호 확인 후 마스킹 없이 이메일 반환 (휴대폰 소유를 이미 증명했으므로)
+export const verifyFindEmail = async (phone: string, code: string) => {
+  const user = await prisma.user.findUnique({ where: { phone } });
+
+  if (
+    !user ||
+    !user.phoneVerificationCode ||
+    !user.phoneVerificationCodeExpiresAt ||
+    user.phoneVerificationCode !== code ||
+    user.phoneVerificationCodeExpiresAt < new Date()
+  ) {
+    throw new AppError("인증번호가 올바르지 않거나 만료되었습니다.", 400);
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { phoneVerificationCode: null, phoneVerificationCodeExpiresAt: null },
+  });
+
+  return { email: user.email };
 };
 
 export const getMe = async (userId: string) => {

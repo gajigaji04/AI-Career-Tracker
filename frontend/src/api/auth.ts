@@ -25,6 +25,16 @@ export const logout = async () => {
   await api.post("/auth/logout");
 };
 
+export const requestFindEmail = async (phone: string) => {
+  const response = await api.post("/auth/find-email/request", { phone });
+  return response.data;
+};
+
+export const verifyFindEmail = async (phone: string, code: string) => {
+  const response = await api.post("/auth/find-email/verify", { phone, code });
+  return response.data;
+};
+
 export const getMe = async () => {
   const response = await api.get("/auth/me");
   return response.data;

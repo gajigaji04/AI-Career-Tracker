@@ -32,6 +32,10 @@ model User {
   yearsOfExperience Int?
   interestedStack   String[]          @default([])
 
+  phone                          String?   @unique
+  phoneVerificationCode          String?
+  phoneVerificationCodeExpiresAt DateTime?
+
   passwordResetToken           String?   @unique
   passwordResetTokenExpiresAt  DateTime?
 
