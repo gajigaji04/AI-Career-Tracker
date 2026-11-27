@@ -21,4 +21,4 @@ export const updateApplicationSchema = z.object({
     .enum(["APPLIED", "DOCUMENT_PASS", "INTERVIEW", "FINAL_PASS", "REJECTED"])
     .optional(),
   memo: z.string().optional(),
-});
+}).strict();

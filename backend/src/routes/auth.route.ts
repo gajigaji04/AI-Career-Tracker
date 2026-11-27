@@ -5,6 +5,7 @@ import { validate } from "../middlewares/validate.middleware";
 import { authLimiter } from "../middlewares/rateLimit.middleware";
 import {
   registerSchema,
+  loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
   findEmailRequestSchema,
@@ -47,6 +48,8 @@ const router = Router();
  *         description: 회원가입 성공
  *       400:
  *         description: 잘못된 요청
+ *       409:
+ *         description: 이미 사용 중인 이메일 또는 휴대폰 번호
  */
 router.post("/register", authLimiter, validate(registerSchema), authController.register);
 
@@ -75,10 +78,12 @@ router.post("/register", authLimiter, validate(registerSchema), authController.r
  *     responses:
  *       200:
  *         description: 로그인 성공 (JWT 토큰 반환)
+ *       400:
+ *         description: 잘못된 요청 (이메일 형식 오류, 필드 누락)
  *       401:
- *         description: 인증 실패
+ *         description: 이메일 또는 비밀번호 불일치 (계정 존재 여부와 무관하게 동일 응답)
  */
-router.post("/login", authLimiter, authController.login);
+router.post("/login", authLimiter, validate(loginSchema), authController.login);
 
 /**
  * @swagger

@@ -7,3 +7,6 @@ export const createStudySchema = z.object({
   studyTime: z.number().positive(),
   studyDate: z.string(),
 });
+
+// 수정은 부분 업데이트. 스키마에 없는 필드(userId 등)가 오면 400
+export const updateStudySchema = createStudySchema.partial().strict();

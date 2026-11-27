@@ -2,7 +2,7 @@ import { Router } from "express";
 import * as studyController from "../controllers/study.controller";
 import { authenticate } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validate.middleware";
-import { createStudySchema } from "../validations/study.validation";
+import { createStudySchema, updateStudySchema } from "../validations/study.validation";
 
 const router = Router();
 
@@ -136,7 +136,7 @@ router.get("/:id", authenticate, studyController.getStudyById);
  *       404:
  *         description: 존재하지 않음
  */
-router.patch("/:id", authenticate, studyController.updateStudy);
+router.patch("/:id", authenticate, validate(updateStudySchema), studyController.updateStudy);
 
 /**
  * @swagger

@@ -26,6 +26,7 @@ vi.mock("jsonwebtoken");
 // ─── 2. Mock된 모듈 가져오기 ──────────────────────────────────────────────────
 // vi.mocked()로 감싸면 TypeScript가 mock 메서드(.mockResolvedValue 등)를 인식함
 import { prisma } from "../prisma/prisma";
+import { Prisma } from "@prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -104,17 +105,39 @@ describe("AuthService", () => {
       });
     });
 
-    it("이미 존재하는 이메일이면 에러를 던져야 한다", async () => {
+    it("이미 존재하는 이메일이면 409 에러를 던져야 한다", async () => {
       // Arrange: 이미 유저가 존재하는 상황
       mockPrismaUser.findUnique.mockResolvedValue(fakeUser as never);
 
-      // Assert: 에러가 던져지는지 확인
-      await expect(register(registerDto)).rejects.toThrow(
-        "이미 사용 중인 이메일입니다.",
-      );
+      // Assert: 500 이 되는 일반 Error 가 아니라 409 AppError 여야 함
+      await expect(register(registerDto)).rejects.toMatchObject({
+        message: "이미 사용 중인 이메일입니다.",
+        statusCode: 409,
+      });
 
       // 에러가 발생했으므로 create는 호출되지 않아야 함
       expect(mockPrismaUser.create).not.toHaveBeenCalled();
+    });
+
+    it("휴대폰 번호 중복 등 unique 제약 위반(P2002)이면 409 에러를 던져야 한다", async () => {
+      mockPrismaUser.findUnique.mockResolvedValue(null);
+      mockBcrypt.hash.mockResolvedValue("hashed_password" as never);
+      mockPrismaUser.create.mockRejectedValue(
+        new Prisma.PrismaClientKnownRequestError("Unique constraint failed", {
+          code: "P2002",
+          clientVersion: "test",
+        }),
+      );
+
+      await expect(register(registerDto)).rejects.toMatchObject({ statusCode: 409 });
+    });
+
+    it("unique 제약 위반이 아닌 DB 에러는 그대로 던져야 한다 (409로 숨기지 않음)", async () => {
+      mockPrismaUser.findUnique.mockResolvedValue(null);
+      mockBcrypt.hash.mockResolvedValue("hashed_password" as never);
+      mockPrismaUser.create.mockRejectedValue(new Error("connection lost"));
+
+      await expect(register(registerDto)).rejects.toThrow("connection lost");
     });
   });
 
@@ -158,21 +181,32 @@ describe("AuthService", () => {
       );
     });
 
-    it("존재하지 않는 이메일이면 404 에러를 던져야 한다", async () => {
+    it("존재하지 않는 이메일이면 401 + 공통 메시지를 던지고, 더미 해시로 bcrypt 비교를 수행해야 한다", async () => {
       mockPrismaUser.findUnique.mockResolvedValue(null);
+      mockBcrypt.compare.mockResolvedValue(false as never);
 
-      await expect(login("wrong@example.com", "password123")).rejects.toThrow(
-        "사용자를 찾을 수 없습니다.",
+      await expect(login("wrong@example.com", "password123")).rejects.toMatchObject({
+        message: "이메일 또는 비밀번호가 올바르지 않습니다.",
+        statusCode: 401,
+      });
+
+      // 계정이 없어도 bcrypt 비교를 거쳐야 응답 시간으로 계정 존재 여부를 알 수 없음
+      expect(mockBcrypt.compare).toHaveBeenCalledTimes(1);
+      expect(mockBcrypt.compare).toHaveBeenCalledWith(
+        "password123",
+        expect.stringMatching(/^\$2[aby]\$10\$/),
       );
+      expect(mockJwt.sign).not.toHaveBeenCalled();
     });
 
-    it("비밀번호가 틀리면 401 에러를 던져야 한다", async () => {
+    it("비밀번호가 틀리면 계정 없음과 동일한 401 + 공통 메시지를 던져야 한다", async () => {
       mockPrismaUser.findUnique.mockResolvedValue(fakeUser as never);
       mockBcrypt.compare.mockResolvedValue(false as never);
 
-      await expect(login("test@example.com", "wrongpassword")).rejects.toThrow(
-        "비밀번호가 일치하지 않습니다.",
-      );
+      await expect(login("test@example.com", "wrongpassword")).rejects.toMatchObject({
+        message: "이메일 또는 비밀번호가 올바르지 않습니다.",
+        statusCode: 401,
+      });
 
       // 비밀번호 틀렸으므로 jwt.sign은 호출되지 않아야 함
       expect(mockJwt.sign).not.toHaveBeenCalled();
