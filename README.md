@@ -58,8 +58,9 @@
 ### 인증
 
 - 회원가입 / 로그인 (이메일 + 비밀번호)
-- JWT 기반 인증 (Access Token + Refresh Token, httpOnly 쿠키)
+- JWT 기반 인증 (Access Token + Refresh Token, httpOnly 쿠키, 로그아웃·비밀번호 재설정 시 기존 Refresh Token 일괄 무효화)
 - 비밀번호 찾기 / 재설정 (Resend를 통한 이메일 인증, 1회용 만료 토큰)
+- 아이디(이메일) 찾기 (휴대폰 인증번호, 5분 만료 · 코드당 5회 시도 제한)
 
 ### 학습 기록 / 프로젝트 / 지원 현황 관리
 
@@ -69,14 +70,15 @@
 
 ### 이력서 관리
 
-- 이력서 업로드 (PDF / DOC / DOCX, 최대 10MB, AWS S3 저장)
-- 버전 자동 관리 (업로드할 때마다 버전 증가)
+- 이력서 업로드 (PDF / DOC / DOCX, 최대 10MB, AWS S3 저장, 파일 시그니처로 실제 형식 검증)
+- 버전 자동 관리 (업로드할 때마다 버전 증가, 동시 업로드에도 중복 버전 없음)
+- 다운로드는 5분짜리 서명 URL로 제공 (버킷 퍼블릭 액세스 차단)
 
 ### AI 커리어 분석
 
 - 지원 내역을 선택하면 해당 회사/포지션 기준으로 자기소개서 초안 생성
 - 예상 면접 질문 생성
-- 생성 결과는 지원 건마다 누적 저장 (기존 결과를 덮어쓰지 않음)
+- 생성 결과는 지원 건마다 누적 저장 (기존 결과를 덮어쓰지 않음, 지원 내역 삭제 시 함께 삭제)
 
 ### 대시보드
 
@@ -203,27 +205,32 @@ AI_careerHub/
 │   │   ├── hooks/          # React Query 커스텀 훅
 │   │   ├── pages/          # 라우트 단위 페이지
 │   │   ├── routes/         # React Router 설정
+│   │   ├── tests/          # Vitest + Testing Library 테스트
 │   │   └── types/          # 공용 타입 정의
 │   ├── nginx.conf
+│   ├── .env.example
 │   └── Dockerfile
 │
 ├── backend/                 # Express API 서버
 │   ├── src/
-│   │   ├── config/          # S3, Swagger 등 외부 설정
+│   │   ├── config/          # 로거, S3, Swagger 등 외부 설정
 │   │   ├── controllers/     # 요청/응답 처리
 │   │   ├── services/        # 비즈니스 로직
 │   │   ├── routes/          # 라우트 정의 (Swagger 주석 포함)
 │   │   ├── validations/     # Zod 스키마
-│   │   ├── middlewares/     # 인증, 검증, 에러 핸들링
+│   │   ├── middlewares/     # 인증, 검증, 요청 제한, 에러 핸들링
 │   │   ├── errors/          # 커스텀 에러 클래스
-│   │   ├── prisma/          # Prisma schema / client
-│   │   └── tests/           # Vitest 유닛 테스트
+│   │   ├── prisma/          # Prisma schema / migrations / client
+│   │   └── tests/           # Vitest 유닛 + 통합 테스트
+│   ├── .env.example
 │   └── Dockerfile
 │
-├── docs/                     # ERD, API, 아키텍처 문서
+├── docs/                     # ERD, API, 아키텍처, SSL 운영 문서
+├── scripts/                  # 운영 스크립트 (인증서 갱신)
 ├── docker-compose.yml        # 배포용 컨테이너 구성
+├── docker-compose.dev.yml    # 로컬 개발용 PostgreSQL
 ├── why.md                    # 설계 결정과 그 이유
-└── .github/workflows/        # GitHub Actions CI/CD
+└── .github/                  # CI/CD 워크플로, 이슈·PR 템플릿
 ```
 
 ---
@@ -242,6 +249,7 @@ erDiagram
     USER {
         string id PK
         string email UK
+        string phone UK
         string password
         string name
         string nickname
@@ -293,6 +301,9 @@ erDiagram
     }
 ```
 
+- `RESUME` 는 `(userId, version)` 유니크 — 같은 사용자의 이력서 버전 중복 방지
+- `AI_ANALYSIS → APPLICATION` 은 `ON DELETE CASCADE` — 지원 내역 삭제 시 AI 분석도 함께 삭제
+
 전체 컬럼 설명은 [docs/ERD.md](./docs/ERD.md) 참고.
 
 ---
@@ -330,6 +341,17 @@ erDiagram
 | POST | `/ai/interview-questions` | 예상 면접 질문 생성 | ✓ |
 | GET | `/ai/analyses/:applicationId` | 지원 건별 AI 분석 이력 조회 | ✓ |
 | GET | `/health` | 서버 / DB 상태 확인 (모니터링용) | ✗ |
+
+공통 에러 응답 (`{ success: false, message }` 또는 검증 실패 시 `{ success: false, errors }`):
+
+| 상태 코드 | 의미 |
+| --- | --- |
+| 400 | 요청 검증 실패 — 필수 필드 누락·타입 오류, 수정(PATCH) 요청에 허용되지 않은 필드 포함, 이력서 파일 형식 불일치 |
+| 401 | 인증 필요 / 토큰 만료 · 로그인 실패 (계정 없음·비밀번호 불일치 모두 동일 응답) |
+| 404 | 리소스 없음 (다른 사용자의 리소스도 404) |
+| 409 | 이메일·휴대폰 번호 중복, 이력서 동시 업로드 충돌 |
+| 429 | 요청 횟수 제한 (인증 API 15분 10회, AI API 1시간 20회) |
+| 502 | AI(Groq) 응답 실패·타임아웃 |
 
 ---
 
@@ -415,6 +437,10 @@ docker build -t careerhub-frontend ./frontend
 docker compose up -d
 ```
 
+- 백엔드 컨테이너는 시작 시 `prisma migrate deploy` 로 마이그레이션을 적용한 뒤 서버를 띄웁니다.
+- 포트는 `PORT` 환경 변수로 바꿀 수 있습니다 (기본 3000).
+- `docker stop` 시 SIGTERM 을 받아 처리 중인 요청을 마치고 DB 연결을 정리한 뒤 종료합니다 (graceful shutdown).
+
 ---
 
 ## 환경 변수
@@ -439,6 +465,8 @@ docker compose up -d
 | `AWS_SECRET_ACCESS_KEY` | S3 시크릿 키 |
 | `AWS_S3_BUCKET` | 이력서 업로드 버킷명 |
 | `NODE_ENV` | `development` / `production` |
+| `PORT` | 서버 포트 (선택, 기본 3000) |
+| `LOG_LEVEL` | pino 로그 레벨 (선택, 기본 `info`) |
 
 ### Frontend (`frontend/.env`)
 
@@ -457,9 +485,10 @@ docker compose up -d
 | `controllers/` | HTTP 요청을 받아 `services/`를 호출하고 응답을 반환. 비즈니스 로직은 두지 않음 |
 | `services/` | 실제 비즈니스 로직과 Prisma 쿼리. 테스트 대상의 대부분이 여기 있음 |
 | `routes/` | 라우트 정의 + Swagger 주석(`@swagger`)으로 API 문서를 코드와 함께 관리 |
-| `validations/` | Zod 스키마. `validate` 미들웨어에서 요청 body를 검증 |
-| `middlewares/` | 인증(`authenticate`), 검증(`validate`), 전역 에러 핸들링(`errorHandler`) |
-| `prisma/` | Prisma schema와 싱글턴 클라이언트 |
+| `validations/` | Zod 스키마. 생성용 `create*Schema` 와 수정용 `update*Schema`(부분 수정 + 허용 외 필드 거부)를 분리 |
+| `middlewares/` | 인증(`authenticate`), 검증(`validate` — 검증된 값만 다음 단계로 전달), 요청 제한(`rateLimit`), 전역 에러 핸들링(`errorHandler`) |
+| `prisma/` | Prisma schema, 마이그레이션, 싱글턴 클라이언트 |
+| `tests/` | 서비스 유닛 테스트 + 실제 미들웨어 체인을 거치는 통합 테스트(supertest) |
 | `api/` (frontend) | axios 인스턴스와 엔드포인트별 요청 함수 |
 | `hooks/` (frontend) | React Query 기반 데이터 패칭/뮤테이션 훅. 컴포넌트는 이 훅만 사용 |
 | `components/common/` (frontend) | `Spinner`, `Select`, `PageState` 등 페이지 간 재사용 컴포넌트 |
@@ -549,10 +578,11 @@ Vercel/Render 같은 더 쉬운 선택지가 있었지만, "배포해봤다"라�
 - **TanStack Query 기반 캐싱** — 같은 데이터를 여러 페이지에서 다시 요청하지 않도록 서버 상태를 훅 단위로 캐싱
 - **Docker 멀티 스테이지 빌드** — 프론트엔드는 빌드 산출물만 `nginx:alpine` 이미지에 복사해서 최종 이미지 크기를 최소화
 - **공용 컴포넌트로 중복 제거** — 로딩/에러 UI(`PageState`), select(`Select`), 스피너(`Spinner`)를 페이지마다 새로 만들지 않고 공용화
+- **라우트 단위 코드 스플리팅** — 페이지 컴포넌트를 `React.lazy` 로 분리해 첫 화면에 필요한 번들만 로드
+- **대시보드 집계 병렬화** — 서로 독립적인 count 쿼리 3개를 `Promise.all` 로 동시에 실행
 
 **아직 못한 것 (의도적으로 숨기지 않음)**:
 
-- 코드 스플리팅 미적용 — 현재 프론트엔드 번들이 단일 청크로 약 850KB. `React.lazy` + 라우트 단위 스플리팅이 다음 개선 대상
 - 목록 조회에 페이지네이션 없음 — 데이터가 아직 적어 체감 문제는 없지만, 학습 기록/지원 현황이 많아지면 필요
 
 ---
@@ -561,16 +591,21 @@ Vercel/Render 같은 더 쉬운 선택지가 있었지만, "배포해봤다"라�
 
 | 항목 | 적용 내용 |
 | --- | --- |
-| 인증 | JWT (Access / Refresh Token 분리) |
+| 인증 | JWT (Access / Refresh Token 분리), `tokenVersion` 으로 로그아웃·비밀번호 재설정 시 Refresh Token 서버 측 무효화 |
 | 토큰 저장 | httpOnly 쿠키 (localStorage 미사용, XSS로 토큰 탈취 방지) |
 | 비밀번호 | bcrypt 해시 저장 |
-| 전송 구간 | HTTPS (Let's Encrypt, HTTP → HTTPS 강제 리다이렉트) |
-| CORS | `ALLOWED_ORIGIN` 환경 변수로 허용 Origin 명시 |
-| 요청 검증 | Zod 스키마로 컨트롤러 진입 전 요청 body 검증 |
-| 비밀번호 재설정 | 계정 존재 여부와 무관하게 항상 동일한 응답(이넘레이션 방지), 1회용 만료 토큰 |
-| 환경 변수 | `.env`로 시크릿 분리, 저장소에 커밋하지 않음 |
-
-**개선 예정**: EC2 보안그룹 22번(SSH) 포트가 현재 `0.0.0.0/0`으로 열려 있어, 특정 IP 대역으로 제한하는 작업이 남아있습니다. ([향후 계획](#향후-계획) 참고)
+| 전송 구간 | HTTPS (Let's Encrypt, HTTP → HTTPS 강제 리다이렉트), HSTS 등 Nginx 보안 헤더 |
+| CORS | `ALLOWED_ORIGIN` 환경 변수로 허용 Origin 명시 (콤마로 여러 개) |
+| 요청 검증 | Zod 스키마로 컨트롤러 진입 전 검증, 검증된 값만 서비스로 전달. 수정 API는 허용 외 필드를 400으로 거부하고 서비스에서도 허용 필드만 DB에 반영 |
+| 소유권 | 모든 조회·수정·삭제를 `userId` 조건으로 제한 |
+| 계정 열거 방지 | 로그인 실패(계정 없음·비밀번호 불일치)는 같은 상태 코드·메시지·처리 시간으로 응답. 비밀번호 찾기·아이디 찾기도 등록 여부와 무관하게 동일 응답 |
+| 인증번호 | 5분 만료, 코드당 5회 시도 제한(동시 요청에도 원자적 차감), 상수 시간 비교, 운영 환경에서 인증번호 로그 미기록 |
+| 요청 제한 | 인증 API 15분 10회, AI API 1시간 20회 (IP 기준) |
+| 파일 업로드 | 10MB 제한, mimetype 이 아닌 파일 시그니처로 PDF/DOC/DOCX 검증, S3 퍼블릭 차단 + 5분 서명 URL |
+| 컨테이너 | 백엔드 컨테이너 non-root(`node`) 실행 |
+| 의존성 | CI 에서 `npm audit --omit=dev --audit-level=high` 통과 필수 |
+| 환경 변수 | `.env`로 시크릿 분리, 저장소에 커밋하지 않음 (`.env.example` 만 커밋) |
+| 서버 접근 | EC2 SSH(22) 인바운드를 관리자 IP로 제한 |
 
 ---
 
@@ -578,18 +613,23 @@ Vercel/Render 같은 더 쉬운 선택지가 있었지만, "배포해봤다"라�
 
 ```bash
 cd backend
-npm test              # vitest 실행
+npx vitest run        # 1회 실행 (npm test 는 watch 모드)
+npx tsc --noEmit      # 타입 체크
 npm run test:coverage # 커버리지 포함 실행
+
+cd frontend
+npm test              # vitest run (jsdom)
+npm run lint
 ```
 
-| 항목 | 결과 |
-| --- | --- |
-| 테스트 파일 | 6개 (`auth`, `study`, `project`, `application`, `resume`, `ai` 서비스) |
-| 테스트 케이스 | 51개 |
-| 대상 | 서비스(비즈니스 로직) 계층 유닛 테스트 |
-| 상태 | 전부 통과, GitHub Actions 배포 파이프라인의 필수 게이트로 연결됨 |
+| 구분 | 테스트 파일 | 케이스 | 대상 |
+| --- | --- | --- | --- |
+| Backend | 10개 | 112개 | 서비스 유닛 테스트(auth·아이디 찾기·study·project·application·resume·ai·sms) + rate limiter + **통합 테스트**(supertest 로 실제 라우트 → 인증 → 검증 → 컨트롤러 → 에러 핸들러 체인 검증) |
+| Frontend | 4개 | 13개 | 회원가입 폼, React Query 훅(`useMe`, `useStudies`), axios 401 인터셉터 |
 
-프론트엔드 테스트는 아직 없습니다 — [향후 계획](#향후-계획)에 기록해뒀습니다.
+- 통합 테스트는 단위 테스트가 잡지 못하는 문제(미들웨어 누락, 의존성 override 로 인한 런타임 오류)를 실제로 잡아낸 이력이 있습니다.
+- DB 는 테스트에서 mock 으로 대체합니다. 마이그레이션·FK 동작은 로컬 Postgres(`docker-compose.dev.yml`)에 적용해서 따로 확인합니다.
+- 백엔드·프론트 테스트 모두 GitHub Actions 배포 파이프라인의 필수 게이트입니다.
 
 ---
 
@@ -618,29 +658,38 @@ flowchart LR
 
 ## CI/CD
 
-`.github/workflows/deploy.yml` — `main` 브랜치에 push되면 아래 순서로 실행됩니다.
+워크플로는 두 개입니다.
+
+**`.github/workflows/ci.yml`** — `main` 대상 Pull Request 에서 실행 (머지 전 검사)
+
+| Backend | Frontend |
+| --- | --- |
+| `npm ci` → `npm audit` → `tsc --noEmit` → `vitest run` | `npm ci` → `npm audit` → `lint` → `test` → `build` |
+
+**`.github/workflows/deploy.yml`** — `main` 브랜치에 push 되면 실행 (배포)
 
 ```mermaid
 flowchart TD
-    A["push to main"] --> B["Checkout"]
-    B --> C["Node.js 20 설정"]
-    C --> D["npm ci (backend)"]
-    D --> E["npm test (백엔드 51개 테스트)"]
-    E -->|실패| STOP["배포 중단"]
-    E -->|통과| F["Docker 로그인"]
-    F --> G["backend 이미지 빌드 & 푸시"]
-    G --> H["frontend 이미지 빌드 & 푸시"]
-    H --> I["docker-compose.yml SCP 전송"]
+    A["push to main"] --> B["Checkout · Node.js 20"]
+    B --> C["backend: npm ci → npm audit → test"]
+    C --> D["frontend: npm ci → npm audit → test"]
+    C -->|실패| STOP["배포 중단"]
+    D -->|실패| STOP
+    D -->|통과| F["Docker 로그인"]
+    F --> G["backend · frontend 이미지 빌드 & 푸시"]
+    G --> I["docker-compose.yml SCP 전송"]
     I --> J["SSH 접속 →<br/>docker compose pull && up -d"]
     J --> K["배포 완료"]
 ```
 
-테스트가 실패하면 Docker 빌드/배포 단계로 넘어가지 않습니다 —
-이전에는 이 게이트가 없어서 테스트가 깨져도 그냥 배포되는 상태였고, 이번에 `npm test`를 배포 전 필수 단계로 추가했습니다.
+테스트나 의존성 취약점 검사(high 이상)가 실패하면 Docker 빌드/배포 단계로 넘어가지 않습니다.
 
-**브랜치 전략**: `feature/*`, `fix/*`, `infra/*` 단위로 브랜치를 나눠 작업하고, PR로 `main`에 머지합니다.
+> ⚠️ **현재 SSH 배포 단계는 동작하지 않습니다.** EC2 SSH 인바운드를 관리자 IP로 제한한 뒤 GitHub-hosted runner 가 접속할 수 없어,
+> 이미지 푸시 후 EC2 에서 수동으로 `docker compose pull && up -d` 를 실행합니다. SSH 대신 GitHub OIDC + AWS SSM Run Command 로 전환할 예정입니다.
 
-**커밋 컨벤션**: `<type>: <설명>` 형태 (`feat:`, `fix:`)를 사용합니다.
+**브랜치 전략**: `feature/*`, `fix/*`, `chore/*`, `infra/*` 브랜치에서 작업 → PR 로 `dev` 에 머지 → 배포 시점에 `dev` → `main` PR. `main` 머지는 곧 자동 배포입니다.
+
+**커밋 컨벤션**: `<type>: <설명>` 형태 (`feat:`, `fix:`, `chore:`, `docs:`)를 사용합니다.
 
 ---
 
@@ -656,22 +705,29 @@ flowchart TD
 - 로컬에서 문제 없던 코드가 프로덕션에서만 깨지는 경우, 원인이 코드가 아니라 인프라/환경 설정 쪽에 있는 경우가 많아서 디버깅 범위를 넓게 잡아야 했습니다.
 - 백엔드 테스트를 짜놓고도 정작 CI에 연결하지 않아서 "안전장치를 만들어놓고 쓰지 않는" 상태로 한동안 방치했던 것 — 테스트는 짜는 것과 "강제하는 것"이 별개라는 걸 깨달았습니다.
 
+- 설정 파일(`app.ts`, `nginx.conf`, `docker-compose.yml`)이나 lockfile 을 부분 수정할 때 관계없는 줄이 조용히 사라지는 사고가 반복됐습니다. 그 뒤로는 수정 후 파일 전체 diff 확인, 의존성 변경 시 빈 디렉토리에서 `npm ci` 재현을 규칙으로 두고 있습니다.
+
 **개선할 점**
 
-- 프론트엔드 테스트 커버리지가 전무합니다. 다음 우선순위로 두고 있습니다.
+- 프론트엔드 테스트는 핵심 폼·훅·인터셉터 위주로 시작한 단계라 페이지 단위 커버리지는 아직 낮습니다.
 - 모니터링이 사후 대응(`/health` 엔드포인트를 만들어둔 정도)에 머물러 있어서, 실제 알림 체계까지는 아직 못 붙였습니다.
+- 배포 파이프라인의 SSH 단계가 보안그룹 제한 이후 막혀 있어, 배포가 반자동 상태입니다.
 
 ---
 
 ## 향후 계획
 
-- [ ] EC2 보안그룹 22번(SSH) 포트를 특정 IP 대역으로 제한
-- [ ] EC2에 Elastic IP 연결 (재부팅 시 IP 변경으로 인한 도메인 단절 방지)
+- [x] EC2 보안그룹 22번(SSH) 포트를 특정 IP 대역으로 제한
+- [x] EC2에 Elastic IP 연결 (재부팅 시 IP 변경으로 인한 도메인 단절 방지)
+- [x] 프론트엔드 테스트 추가 (React Query 훅, 폼 검증 로직 우선)
+- [x] 프론트엔드 코드 스플리팅 (라우트 단위 `React.lazy`)
+- [x] 로컬 개발 환경 (`docker-compose.dev.yml` + `.env.example`)
+- [x] API 입력 검증·인증 응답 정리, 인증번호 시도 제한, 이력서 업로드 정합성, graceful shutdown
+- [ ] CI 배포를 SSH 대신 GitHub OIDC + AWS SSM Run Command 로 전환
 - [ ] UptimeRobot 등 외부 모니터링에 `/health` 엔드포인트 연결
-- [ ] 프론트엔드 테스트 추가 (React Query 훅, 폼 검증 로직 우선)
-- [ ] 프론트엔드 코드 스플리팅 (라우트 단위 `React.lazy`)
+- [ ] 인증서 자동 갱신 정상 동작 여부 실제 검증 (`certbot renew --dry-run`) — [docs/SSL.md](docs/SSL.md)
+- [ ] 프론트엔드: 동시 401 시 토큰 갱신 요청 1회로 공유, 라우트 가드
 - [ ] 목록 조회 페이지네이션
-- [ ] 인증서 자동 갱신 정상 동작 여부 실제 검증 (`certbot renew --dry-run`)
 
 ---
 
@@ -699,3 +755,4 @@ flowchart TD
 - [docs/ERD.md](./docs/ERD.md)
 - [docs/API.md](./docs/API.md)
 - [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
+- [docs/SSL.md](./docs/SSL.md) — SSL 인증서 발급·갱신 구조와 운영 검증 절차
