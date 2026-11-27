@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: 📘 API 문서 (Swagger)
+  - name: API 문서 (Swagger)
     url: https://aicareerhub-site.duckdns.org/api-docs
     about: 엔드포인트 스펙 확인
