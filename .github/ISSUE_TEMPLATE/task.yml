@@ -1,0 +1,39 @@
+name: 🔧 작업 / 리팩토링 / 기술 부채
+description: 기능 변화 없는 개선, 의존성 업데이트, 인프라·문서 작업
+title: "[Chore] "
+body:
+  - type: dropdown
+    id: type
+    attributes:
+      label: 작업 유형
+      options:
+        - 리팩토링
+        - 보안 강화
+        - 의존성 업데이트
+        - 인프라 / CI·CD
+        - 테스트 보강
+        - 문서
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: 작업 내용
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: 이유
+      description: 지금 상태의 문제점 (관련 파일·라인이 있으면 같이)
+
+  - type: textarea
+    id: done
+    attributes:
+      label: 완료 조건
+      value: |
+        - [ ] backend `npx vitest run` / `npx tsc --noEmit` 통과
+        - [ ] frontend `npm test` / `npm run build` 통과
+        - [ ] (의존성 변경 시) 깨끗한 디렉토리에서 `npm ci` 성공 확인

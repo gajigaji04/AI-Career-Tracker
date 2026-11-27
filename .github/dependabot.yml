@@ -1,0 +1,49 @@
+version: 2
+updates:
+  # 의존성 PR 폭탄 방지: 월 1회, minor/patch는 한 PR로 묶음.
+  # lockfile overrides(vite → yaml)가 빠지는 사고가 있었으므로, 머지 전 CI의 npm ci 통과를 반드시 확인.
+  - package-ecosystem: npm
+    directory: /backend
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      backend-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      frontend-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "chore(ci)"
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: docker
+    directory: /backend
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "chore(docker)"
+
+  - package-ecosystem: docker
+    directory: /frontend
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "chore(docker)"
