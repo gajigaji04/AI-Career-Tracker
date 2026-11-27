@@ -1,0 +1,19 @@
+# Secrets
+.env
+.env.*
+!.env.example
+!frontend/.env.production
+*.pem
+
+# Logs / test output
+*.log
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code (local only)
+CLAUDE.md
+.claude/
+TODO.md

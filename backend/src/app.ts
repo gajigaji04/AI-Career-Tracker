@@ -14,7 +14,7 @@ import resumeRouter from "./routes/resume.route";
 
 import { errorHandler } from "./middlewares/error.middleware";
 import { prisma } from "./prisma/prisma";
-import { logger } from "./config/logger";
+// import { logger } from "./config/logger";
 
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger";
@@ -23,18 +23,20 @@ const app = express();
 
 // CSP is already applied at the Nginx edge for the frontend; disabling it here avoids
 // breaking Swagger UI's inline script at /api-docs while keeping helmet's other headers.
-app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors({
-  origin: process.env.ALLOWED_ORIGIN ?? "http://localhost:5173",
-  credentials: true,
-}));
-app.use(cookieParser());
-app.use(express.json());
-// 요청마다 고유 ID를 붙여서, 장애가 나면 그 요청 하나의 로그만 골라 추적할 수 있게 함.
+const allowedOrigins = (process.env.ALLOWED_ORIGIN ?? "http://localhost:5173")
+  .split(",")
+  .map((o) => o.trim());
+
 app.use(
-  pinoHttp({
-    logger,
-    autoLogging: { ignore: (req) => req.url === "/health" },
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Not allowed by CORS: ${origin}`));
+      }
+    },
+    credentials: true,
   }),
 );
 
