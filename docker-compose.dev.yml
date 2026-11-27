@@ -1,0 +1,29 @@
+# 로컬 개발용 PostgreSQL (운영 RDS 는 private subnet 이라 로컬에서 접속 불가)
+#
+#   docker compose -f docker-compose.dev.yml up -d     # 시작
+#   docker compose -f docker-compose.dev.yml down      # 중지 (데이터 유지)
+#   docker compose -f docker-compose.dev.yml down -v   # 중지 + 로컬 DB 데이터 삭제
+#
+# 운영용 docker-compose.yml 과 볼륨·네트워크가 섞이지 않도록 프로젝트 이름을 분리한다.
+name: careerhub-dev
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: careerhub
+      POSTGRES_PASSWORD: careerhub
+      POSTGRES_DB: careerhub
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U careerhub -d careerhub"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  db-data:

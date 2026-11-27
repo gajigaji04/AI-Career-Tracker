@@ -345,18 +345,43 @@ cd AI-Career-Tracker
 ### Install
 
 ```bash
-cd backend && npm install
-cd ../frontend && npm install
+cd backend && npm ci
+cd ../frontend && npm ci
 ```
 
 ### ENV
 
-`backend/.env`, `frontend/.env` 파일을 아래 [환경 변수](#환경-변수) 표를 참고해서 각각 생성합니다.
+예시 파일을 복사해서 사용합니다. 로컬 개발은 예시 값 그대로도 실행됩니다 (AI·메일·이력서 업로드만 실제 키가 필요).
+
+```bash
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+```
+
+각 변수의 의미는 아래 [환경 변수](#환경-변수) 표 참고.
+
+### 로컬 DB (PostgreSQL 16)
+
+운영 RDS는 private subnet에 있어 로컬에서 접속할 수 없으므로 Docker로 로컬 Postgres를 띄웁니다.
+Docker Desktop 대신 WSL2 + Docker Engine, Rancher Desktop, Podman(`podman compose`)에서도 같은 파일로 동작합니다. 컨테이너 없이 PostgreSQL 16을 직접 설치해도 되며, 이 경우 `DATABASE_URL`만 맞추면 됩니다.
+
+```bash
+# 프로젝트 루트에서
+docker compose -f docker-compose.dev.yml up -d
+
+# 마이그레이션 적용 (최초 1회 + 스키마 변경 시)
+cd backend
+npx prisma migrate dev
+```
+
+- 접속 정보: `postgresql://careerhub:careerhub@localhost:5432/careerhub` (`backend/.env.example` 기본값)
+- 5432 포트가 이미 사용 중이면 `POSTGRES_PORT=5433 docker compose -f docker-compose.dev.yml up -d` 로 띄우고 `DATABASE_URL` 포트도 맞춰 변경
+- 중지: `docker compose -f docker-compose.dev.yml down` / 데이터까지 삭제: `... down -v`
 
 ### Run (개발 서버)
 
 ```bash
-# 백엔드 (http://localhost:3000)
+# 백엔드 (http://localhost:3000, Swagger: /api-docs)
 cd backend
 npm run dev
 
