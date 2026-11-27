@@ -17,6 +17,9 @@ const DUMMY_PASSWORD_HASH = "$2b$10$XyCTPh59ZKOsMUksXMleDOEqppc/8u2iP4YJDhxyWbZl
 const INVALID_CREDENTIALS_MESSAGE = "이메일 또는 비밀번호가 올바르지 않습니다.";
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
 const PHONE_CODE_TTL_MS = 5 * 60 * 1000;
+// 인증번호 하나당 허용하는 검증 시도 횟수. 초과 시 코드 폐기 → 새로 요청해야 함
+export const MAX_PHONE_CODE_ATTEMPTS = 5;
+const INVALID_PHONE_CODE_MESSAGE = "인증번호가 올바르지 않거나 만료되었습니다.";
 
 interface RegisterDto {
   email: string;
@@ -207,7 +210,11 @@ export const requestFindEmail = async (phone: string) => {
 
   await prisma.user.update({
     where: { id: user.id },
-    data: { phoneVerificationCode: code, phoneVerificationCodeExpiresAt: expiresAt },
+    data: {
+      phoneVerificationCode: code,
+      phoneVerificationCodeExpiresAt: expiresAt,
+      phoneVerificationAttempts: 0,
+    },
   });
 
   try {
@@ -218,25 +225,63 @@ export const requestFindEmail = async (phone: string) => {
 };
 
 // 인증번호 확인 후 마스킹 없이 이메일 반환 (휴대폰 소유를 이미 증명했으므로)
+// 미등록 번호 / 코드 없음 / 만료 / 불일치 / 시도 횟수 초과 모두 같은 400 응답 (번호 등록 여부 비노출)
 export const verifyFindEmail = async (phone: string, code: string) => {
   const user = await prisma.user.findUnique({ where: { phone } });
 
-  if (
-    !user ||
-    !user.phoneVerificationCode ||
-    !user.phoneVerificationCodeExpiresAt ||
-    user.phoneVerificationCode !== code ||
-    user.phoneVerificationCodeExpiresAt < new Date()
-  ) {
-    throw new AppError("인증번호가 올바르지 않거나 만료되었습니다.", 400);
+  if (!user || !user.phoneVerificationCode || !user.phoneVerificationCodeExpiresAt) {
+    throw new AppError(INVALID_PHONE_CODE_MESSAGE, 400);
   }
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { phoneVerificationCode: null, phoneVerificationCodeExpiresAt: null },
+  const clearCode = () =>
+    prisma.user.update({
+      where: { id: user.id },
+      data: {
+        phoneVerificationCode: null,
+        phoneVerificationCodeExpiresAt: null,
+        phoneVerificationAttempts: 0,
+      },
+    });
+
+  if (user.phoneVerificationCodeExpiresAt < new Date()) {
+    await clearCode();
+    throw new AppError(INVALID_PHONE_CODE_MESSAGE, 400);
+  }
+
+  // 비교 전에 시도 횟수를 원자적으로 먼저 차감한다. 동시 요청이 들어와도
+  // 조건(lt: MAX)을 통과한 요청만 비교할 수 있으므로 총 시도가 MAX 를 넘지 않는다.
+  const claimed = await prisma.user.updateMany({
+    where: {
+      id: user.id,
+      phoneVerificationCode: user.phoneVerificationCode,
+      phoneVerificationAttempts: { lt: MAX_PHONE_CODE_ATTEMPTS },
+    },
+    data: { phoneVerificationAttempts: { increment: 1 } },
   });
 
+  if (claimed.count === 0) {
+    await clearCode();
+    throw new AppError(INVALID_PHONE_CODE_MESSAGE, 400);
+  }
+
+  if (!isSameCode(user.phoneVerificationCode, code)) {
+    // 이번 시도로 최대 횟수에 도달했으면 코드 폐기
+    if (user.phoneVerificationAttempts + 1 >= MAX_PHONE_CODE_ATTEMPTS) {
+      await clearCode();
+    }
+    throw new AppError(INVALID_PHONE_CODE_MESSAGE, 400);
+  }
+
+  await clearCode();
+
   return { email: user.email };
+};
+
+// 문자열 비교 시간으로 코드 자릿수 일치 여부를 추측할 수 없도록 상수 시간 비교
+const isSameCode = (expected: string, actual: string) => {
+  const a = Buffer.from(expected);
+  const b = Buffer.from(actual);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
 };
 
 export const getMe = async (userId: string) => {
