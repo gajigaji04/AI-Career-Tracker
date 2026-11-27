@@ -1,31 +1,30 @@
 ---
-name: 기능 제안
-about: 새 기능이나 기존 기능 개선
+name: 기능
+about: 새 기능 또는 기존 기능 개선
 title: "[Feat] "
 labels: enhancement
 ---
 
-## 영역
+## 배경
 
-<!-- Frontend / Backend (API) / DB·Prisma / AI (Groq) / 인증·보안 / Infra (Docker·Nginx·CI/CD) -->
+<!-- 왜 필요한가. 지금 어떤 점이 불편한가 -->
 
-## 배경 / 해결하려는 문제
+## 요구사항
 
-<!-- 왜 필요한가? 지금은 어떤 점이 불편한가? -->
+<!-- 사용자 관점의 동작. 화면·API 형태가 정해졌다면 함께 -->
 
-## 제안 내용
+-
 
-<!-- 원하는 동작, 화면, API 형태 등 -->
+## 작업 범위
 
-## 작업 목록
+- [ ]
 
-- [ ] Prisma 스키마 / 마이그레이션
-- [ ] validation (create / update 스키마)
-- [ ] service + 단위 테스트
-- [ ] controller / route (+ Swagger 주석)
-- [ ] frontend api / hook / page
-- [ ] 문서 (README / docs) 반영
+## 범위 밖
 
-## 고려한 대안
+<!-- 이번에 하지 않는 것. 없으면 삭제 -->
 
-## 참고 자료
+## 완료 조건
+
+- [ ] 요구사항 동작 확인
+- [ ] 테스트 추가, 관련 테스트·빌드 통과
+- [ ] 문서(README / docs / Swagger) 반영
