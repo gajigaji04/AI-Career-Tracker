@@ -187,7 +187,7 @@ flowchart TB
     Express --> Resend["Resend<br/>(이메일 발송)"]
 ```
 
-인증서(Let's Encrypt)는 certbot 컨테이너가 발급/갱신하고, Nginx가 `443` 포트에서 SSL을 종료한 뒤
+인증서(Let's Encrypt)는 certbot 컨테이너가 발급/갱신하고([SSL 운영 문서](docs/SSL.md)), Nginx가 `443` 포트에서 SSL을 종료한 뒤
 정적 파일은 직접 서빙, `/api/*` 요청만 내부 네트워크로 Express 컨테이너에 프록시합니다.
 
 ---
@@ -585,7 +585,7 @@ flowchart LR
 - **컨테이너**: 백엔드/프론트엔드 각각 Docker 이미지로 빌드, Docker Hub에 푸시
 - **배포 대상**: AWS EC2 (Ubuntu), `docker-compose.yml` 기준으로 컨테이너 실행
 - **리버스 프록시**: Nginx가 443(HTTPS)에서 SSL을 종료하고 정적 파일 서빙 + `/api/*` 프록시
-- **HTTPS**: Let's Encrypt(certbot)로 발급, 크론으로 자동 갱신 설정
+- **HTTPS**: Let's Encrypt(certbot)로 발급. 자동 갱신 크론을 등록했으나 현재 존재 여부와 **정상 동작은 미검증** — 구조·알려진 문제·검증 절차는 [docs/SSL.md](docs/SSL.md)
 - **DB**: AWS RDS(PostgreSQL), 프라이빗 서브넷에 위치해 EC2를 통해서만 접근 가능
 - **파일 저장**: 이력서 업로드는 AWS S3
 
