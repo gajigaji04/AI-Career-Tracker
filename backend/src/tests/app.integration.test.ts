@@ -14,9 +14,19 @@ vi.mock("../prisma/prisma", () => ({
     },
     study: {
       findMany: vi.fn(),
+      findFirst: vi.fn(),
       create: vi.fn(),
+      update: vi.fn(),
     },
   },
+}));
+
+// rate limiter 는 메모리 카운터가 테스트 파일 전체에서 공유돼, 인증 테스트가 늘어나면
+// 순서에 따라 429 로 실패한다. 이 파일은 라우트 체인 검증용이므로 limiter 는 통과시키고,
+// limiter 자체의 동작은 rateLimit.middleware.test.ts 에서 따로 검증한다.
+vi.mock("../middlewares/rateLimit.middleware", () => ({
+  authLimiter: (_req: unknown, _res: unknown, next: () => void) => next(),
+  aiLimiter: (_req: unknown, _res: unknown, next: () => void) => next(),
 }));
 
 process.env.JWT_SECRET = "test-jwt-secret";
@@ -102,6 +112,21 @@ describe("POST /auth/register", () => {
     expect(res.body.success).toBe(false);
     expect(mockUser.create).not.toHaveBeenCalled();
   });
+
+  it("이미 사용 중인 이메일이면 500이 아니라 409를 반환한다", async () => {
+    mockUser.findUnique.mockResolvedValue(fakeUser as never);
+
+    const res = await request(app).post("/auth/register").send({
+      email: fakeUser.email,
+      password: "password1234",
+      name: fakeUser.name,
+      nickname: fakeUser.nickname,
+    });
+
+    expect(res.status).toBe(409);
+    expect(res.body).toEqual({ success: false, message: "이미 사용 중인 이메일입니다." });
+    expect(mockUser.create).not.toHaveBeenCalled();
+  });
 });
 
 describe("POST /auth/login", () => {
@@ -135,6 +160,31 @@ describe("POST /auth/login", () => {
 
     expect(res.status).toBe(401);
     expect(res.body.success).toBe(false);
+  });
+
+  it("존재하지 않는 계정과 비밀번호 불일치의 응답이 상태 코드·본문까지 동일하다 (계정 존재 여부 비노출)", async () => {
+    mockUser.findUnique.mockResolvedValueOnce(null);
+    const unknown = await request(app)
+      .post("/auth/login")
+      .send({ email: "nobody@example.com", password: "password1234" });
+
+    mockUser.findUnique.mockResolvedValueOnce(fakeUser as never);
+    const wrongPw = await request(app)
+      .post("/auth/login")
+      .send({ email: fakeUser.email, password: "wrong-password" });
+
+    expect(unknown.status).toBe(401);
+    expect(wrongPw.status).toBe(401);
+    expect(unknown.body).toEqual(wrongPw.body);
+  });
+
+  it("이메일 형식이 잘못되면 검증 미들웨어가 400을 반환하고 DB 조회까지 가지 않는다", async () => {
+    const res = await request(app)
+      .post("/auth/login")
+      .send({ email: "not-an-email", password: "password1234" });
+
+    expect(res.status).toBe(400);
+    expect(mockUser.findUnique).not.toHaveBeenCalled();
   });
 });
 
@@ -295,6 +345,72 @@ describe("POST /studies — 인증 + 검증 미들웨어가 실제로 체인되�
 
     expect(res.status).toBe(201);
     expect(mockStudy.create).toHaveBeenCalledTimes(1);
+  });
+
+  it("스키마에 없는 필드(userId)를 섞어 보내도 검증된 값만 서비스로 전달되어 DB에 들어가지 않는다", async () => {
+    mockStudy.create.mockResolvedValue({ id: "study-1" } as never);
+
+    const res = await request(app)
+      .post("/studies")
+      .set("Cookie", [`accessToken=${validToken()}`])
+      .send({
+        title: "제목",
+        content: "내용",
+        category: "프론트엔드",
+        studyTime: 60,
+        studyDate: "2026-08-01",
+        userId: "other-user",
+      });
+
+    expect(res.status).toBe(201);
+    // userId 는 토큰의 사용자여야 하고, body 의 값이 쓰이면 안 됨
+    expect(mockStudy.create.mock.calls[0]?.[0].data.userId).toBe(fakeUser.id);
+  });
+});
+
+describe("PATCH /studies/:id — 수정 API 입력 검증", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const validToken = () =>
+    jwt.sign({ userId: fakeUser.id }, process.env.JWT_SECRET!, { expiresIn: "1h" });
+
+  it("스키마에 없는 필드(userId)가 있으면 400을 반환하고 조회·수정까지 가지 않는다", async () => {
+    const res = await request(app)
+      .patch("/studies/study-1")
+      .set("Cookie", [`accessToken=${validToken()}`])
+      .send({ title: "수정", userId: "other-user" });
+
+    expect(res.status).toBe(400);
+    expect(mockStudy.findFirst).not.toHaveBeenCalled();
+    expect(mockStudy.update).not.toHaveBeenCalled();
+  });
+
+  it("필드 타입이 잘못되면(studyTime 문자열) 400을 반환한다", async () => {
+    const res = await request(app)
+      .patch("/studies/study-1")
+      .set("Cookie", [`accessToken=${validToken()}`])
+      .send({ studyTime: "많이" });
+
+    expect(res.status).toBe(400);
+    expect(mockStudy.update).not.toHaveBeenCalled();
+  });
+
+  it("유효한 부분 수정이면 200을 반환하고 허용 필드만 update에 전달한다", async () => {
+    mockStudy.findFirst.mockResolvedValue({ id: "study-1", userId: fakeUser.id } as never);
+    mockStudy.update.mockResolvedValue({ id: "study-1", title: "수정" } as never);
+
+    const res = await request(app)
+      .patch("/studies/study-1")
+      .set("Cookie", [`accessToken=${validToken()}`])
+      .send({ title: "수정" });
+
+    expect(res.status).toBe(200);
+    expect(mockStudy.update).toHaveBeenCalledWith({
+      where: { id: "study-1" },
+      data: { title: "수정" },
+    });
   });
 });
 

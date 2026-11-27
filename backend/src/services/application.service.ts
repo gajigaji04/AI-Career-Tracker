@@ -1,5 +1,6 @@
 import { prisma } from "../prisma/prisma";
 import { AppError } from "../errors/AppError";
+import type { Prisma } from "@prisma/client";
 
 interface CreateApplicationDto {
   companyName: string;
@@ -56,9 +57,16 @@ export const updateApplication = async (
 ) => {
   await getApplicationById(id, userId);
 
+  // 요청 객체를 그대로 넘기지 않고 허용 필드만 골라서 전달 (userId 등 변경 차단)
+  const updateData: Prisma.ApplicationUpdateInput = {};
+  if (data.companyName !== undefined) updateData.companyName = data.companyName;
+  if (data.position !== undefined) updateData.position = data.position;
+  if (data.status !== undefined) updateData.status = data.status;
+  if (data.memo !== undefined) updateData.memo = data.memo;
+
   return prisma.application.update({
     where: { id },
-    data,
+    data: updateData,
   });
 };
 

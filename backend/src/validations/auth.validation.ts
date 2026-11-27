@@ -17,6 +17,12 @@ export const registerSchema = z.object({
   interestedStack: z.array(z.string()).optional(),
 });
 
+// 비밀번호 길이 규칙은 가입 시에만 적용 (규칙 변경 전 가입자도 로그인 가능하도록 min(1))
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+
 export const forgotPasswordSchema = z.object({
   email: z.string().email(),
 });

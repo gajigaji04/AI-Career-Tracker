@@ -6,9 +6,15 @@ import { prisma } from "../prisma/prisma";
 import { AppError } from "../errors/AppError";
 import { logger } from "../config/logger";
 import { sendSms } from "./sms.service";
+import { Prisma } from "@prisma/client";
 import type { ExperienceLevel } from "@prisma/client";
 
 const getResendClient = () => new Resend(process.env.RESEND_API_KEY);
+
+// 존재하지 않는 계정으로 로그인할 때도 bcrypt 비교를 한 번 수행해서
+// 응답 시간 차이로 계정 존재 여부가 드러나지 않게 하기 위한 더미 해시 (어떤 비밀번호와도 불일치)
+const DUMMY_PASSWORD_HASH = "$2b$10$XyCTPh59ZKOsMUksXMleDOEqppc/8u2iP4YJDhxyWbZlPF4RGf7yG";
+const INVALID_CREDENTIALS_MESSAGE = "이메일 또는 비밀번호가 올바르지 않습니다.";
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
 const PHONE_CODE_TTL_MS = 5 * 60 * 1000;
 
@@ -38,40 +44,43 @@ export const register = async ({
   const existing = await prisma.user.findUnique({ where: { email } });
 
   if (existing) {
-    throw new Error("이미 사용 중인 이메일입니다.");
+    throw new AppError("이미 사용 중인 이메일입니다.", 409);
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const user = await prisma.user.create({
-    data: {
-      email,
-      password: hashedPassword,
-      name,
-      nickname,
-      phone: phone ?? null,
-      jobTitle: jobTitle ?? null,
-      experienceLevel: experienceLevel ?? null,
-      yearsOfExperience: yearsOfExperience ?? null,
-      interestedStack: interestedStack ?? [],
-    },
-    select: { id: true, email: true, name: true, nickname: true },
-  });
-
-  return user;
+  try {
+    return await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        name,
+        nickname,
+        phone: phone ?? null,
+        jobTitle: jobTitle ?? null,
+        experienceLevel: experienceLevel ?? null,
+        yearsOfExperience: yearsOfExperience ?? null,
+        interestedStack: interestedStack ?? [],
+      },
+      select: { id: true, email: true, name: true, nickname: true },
+    });
+  } catch (error) {
+    // 휴대폰 번호 중복, 또는 위 이메일 확인 직후 동시 가입된 경우 (unique 제약 위반)
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      throw new AppError("이미 사용 중인 이메일 또는 휴대폰 번호입니다.", 409);
+    }
+    throw error;
+  }
 };
 
 export const login = async (email: string, password: string) => {
   const user = await prisma.user.findUnique({ where: { email } });
 
-  if (!user) {
-    throw new AppError("사용자를 찾을 수 없습니다.", 404);
-  }
+  // 계정 없음 / 비밀번호 불일치를 같은 상태 코드·메시지·처리 시간으로 응답 (계정 존재 여부 비노출)
+  const isMatch = await bcrypt.compare(password, user?.password ?? DUMMY_PASSWORD_HASH);
 
-  const isMatch = await bcrypt.compare(password, user.password);
-
-  if (!isMatch) {
-    throw new AppError("비밀번호가 일치하지 않습니다.", 401);
+  if (!user || !isMatch) {
+    throw new AppError(INVALID_CREDENTIALS_MESSAGE, 401);
   }
 
   const accessToken = jwt.sign(

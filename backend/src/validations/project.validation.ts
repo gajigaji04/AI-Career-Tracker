@@ -10,3 +10,6 @@ export const createProjectSchema = z.object({
 
   techStack: z.string().min(1),
 });
+
+// 수정은 부분 업데이트. 스키마에 없는 필드(userId 등)가 오면 400
+export const updateProjectSchema = createProjectSchema.partial().strict();
