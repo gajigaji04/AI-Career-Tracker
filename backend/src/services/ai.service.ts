@@ -1,10 +1,44 @@
 import Groq from "groq-sdk";
 import { prisma } from "../prisma/prisma";
 import { AppError } from "../errors/AppError";
+import { logger } from "../config/logger";
 
-const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
+// SDK 기본값(60초 타임아웃 · 재시도 2회)이면 최악의 경우 응답까지 몇 분이 걸려
+// Nginx proxy_read_timeout(기본 60초)을 넘긴다. 25초 × (1 + 재시도 1회)로 제한.
+const client = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+  timeout: 25_000,
+  maxRetries: 1,
+});
 
 const MODEL = "llama-3.3-70b-versatile";
+const AI_UNAVAILABLE_MESSAGE = "AI 응답 생성에 실패했습니다. 잠시 후 다시 시도해주세요.";
+
+// Groq 호출만 감싸서 외부 API 실패(타임아웃·rate limit·5xx·네트워크)를 502 로 변환.
+// DB 에러 등 다른 실패는 감싸지 않으므로 그대로 전달된다.
+const requestCompletion = async (prompt: string, maxTokens: number) => {
+  let content: string | null | undefined;
+
+  try {
+    const completion = await client.chat.completions.create({
+      model: MODEL,
+      max_tokens: maxTokens,
+      messages: [{ role: "user", content: prompt }],
+    });
+    content = completion.choices[0]?.message?.content;
+  } catch (err) {
+    logger.error({ err }, "Groq API request failed");
+    throw new AppError(AI_UNAVAILABLE_MESSAGE, 502);
+  }
+
+  // 빈 응답은 저장하지 않는다 (빈 분석 결과가 누적되는 것 방지)
+  if (!content?.trim()) {
+    logger.error("Groq API returned empty content");
+    throw new AppError(AI_UNAVAILABLE_MESSAGE, 502);
+  }
+
+  return content;
+};
 
 export const generateCoverLetter = async (
   userId: string,
@@ -50,13 +84,7 @@ ${studyDesc}
 
 자기소개서를 지원동기, 직무 역량, 프로젝트 경험, 입사 후 포부 순으로 작성해주세요. 최근 학습 기록에서 직무와 관련된 내용이 있다면 자연스럽게 녹여주세요. 각 항목은 2-3문단으로 구성해주세요.`;
 
-  const completion = await client.chat.completions.create({
-    model: MODEL,
-    max_tokens: 1500,
-    messages: [{ role: "user", content: prompt }],
-  });
-
-  const content = completion.choices[0]?.message?.content ?? "";
+  const content = await requestCompletion(prompt, 1500);
 
   return prisma.aiAnalysis.create({
     data: { type: "COVER_LETTER", content, applicationId, userId },
@@ -100,13 +128,7 @@ A1. [모범 답변]
 Q2. [질문]
 A2. [모범 답변]`;
 
-  const completion = await client.chat.completions.create({
-    model: MODEL,
-    max_tokens: 2000,
-    messages: [{ role: "user", content: prompt }],
-  });
-
-  const content = completion.choices[0]?.message?.content ?? "";
+  const content = await requestCompletion(prompt, 2000);
 
   return prisma.aiAnalysis.create({
     data: { type: "INTERVIEW_QUESTIONS", content, applicationId, userId },

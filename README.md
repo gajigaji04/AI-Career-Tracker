@@ -431,7 +431,7 @@ docker compose up -d
 | `GROQ_API_KEY` | AI 분석(Groq) API 키 |
 | `RESEND_API_KEY` | 이메일 발송(Resend) API 키 |
 | `RESEND_FROM_EMAIL` | 이메일 발신 주소 |
-| `SOLAPI_API_KEY` | 문자 발송(Solapi) API 키 (미설정 시 로그로 대체) |
+| `SOLAPI_API_KEY` | 문자 발송(Solapi) API 키 (미설정 시 `NODE_ENV=development` 에서만 인증번호를 로그로 대체, 그 외 환경은 발송 실패 처리) |
 | `SOLAPI_API_SECRET` | 문자 발송(Solapi) API 시크릿 |
 | `SOLAPI_SENDER_NUMBER` | 문자 발신 번호 |
 | `AWS_REGION` | S3 리전 |

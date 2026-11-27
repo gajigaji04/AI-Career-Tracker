@@ -35,6 +35,8 @@ model User {
   phone                          String?   @unique
   phoneVerificationCode          String?
   phoneVerificationCodeExpiresAt DateTime?
+  // 인증번호 검증 시도 횟수. 최대 횟수 도달 시 코드를 폐기한다 (새 코드 요청 시 0으로 초기화)
+  phoneVerificationAttempts      Int       @default(0)
 
   passwordResetToken           String?   @unique
   passwordResetTokenExpiresAt  DateTime?
