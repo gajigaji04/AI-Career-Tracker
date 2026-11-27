@@ -2,12 +2,11 @@ import { useEffect, useState } from "react";
 
 export const useCountUp = (target: number, duration = 900) => {
   const [value, setValue] = useState(0);
+  // 모션 최소화 설정이면 애니메이션 없이 바로 목표값을 보여준다 (effect 안에서 setState 하지 않음)
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setValue(target);
-      return;
-    }
+    if (reduceMotion) return;
 
     let frame: number;
     const start = performance.now();
@@ -22,7 +21,7 @@ export const useCountUp = (target: number, duration = 900) => {
 
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [target, duration]);
+  }, [target, duration, reduceMotion]);
 
-  return value;
+  return reduceMotion ? target : value;
 };

@@ -142,6 +142,31 @@ describe("StudyService", () => {
       });
     });
 
+    it("허용되지 않은 필드(userId 등)가 섞여 와도 Prisma에는 허용 필드만 전달해야 한다", async () => {
+      mockStudy.findFirst.mockResolvedValue(fakeStudy as never);
+      mockStudy.update.mockResolvedValue(updatedStudy as never);
+
+      const tampered = { ...updateData, userId: "other-user", id: "other-id" };
+      await updateStudy(STUDY_ID, USER_ID, tampered as typeof updateData);
+
+      expect(mockStudy.update).toHaveBeenCalledWith({
+        where: { id: STUDY_ID },
+        data: updateData,
+      });
+    });
+
+    it("studyDate 수정 시 문자열을 Date로 변환해서 전달해야 한다", async () => {
+      mockStudy.findFirst.mockResolvedValue(fakeStudy as never);
+      mockStudy.update.mockResolvedValue(fakeStudy as never);
+
+      await updateStudy(STUDY_ID, USER_ID, { studyDate: "2026-07-01" });
+
+      expect(mockStudy.update).toHaveBeenCalledWith({
+        where: { id: STUDY_ID },
+        data: { studyDate: new Date("2026-07-01") },
+      });
+    });
+
     it("존재하지 않는 학습 기록이면 404 에러를 던지고 update는 호출하지 않아야 한다", async () => {
       mockStudy.findFirst.mockResolvedValue(null);
 

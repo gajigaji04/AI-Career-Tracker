@@ -198,19 +198,42 @@ describe("AiService", () => {
       );
     });
 
-    it("AI 응답에 content가 없으면 빈 문자열로 저장해야 한다", async () => {
+    it("AI 응답에 content가 없으면 502를 던지고 빈 분석 결과를 저장하지 않아야 한다", async () => {
       mockApplication.findFirst.mockResolvedValue(fakeApplication as never);
       mockUser.findUnique.mockResolvedValue(fakeUser as never);
       mockProject.findMany.mockResolvedValue(fakeProjects as never);
       mockStudy.findMany.mockResolvedValue(fakeStudies as never);
       mockCreate.mockResolvedValue({ choices: [] } as never);
-      mockAiAnalysis.create.mockResolvedValue(fakeAiAnalysis as never);
 
-      await generateCoverLetter(USER_ID, APPLICATION_ID);
-
-      expect(mockAiAnalysis.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({ content: "" }),
+      await expect(generateCoverLetter(USER_ID, APPLICATION_ID)).rejects.toMatchObject({
+        statusCode: 502,
       });
+      expect(mockAiAnalysis.create).not.toHaveBeenCalled();
+    });
+
+    it("Groq API 호출이 실패(타임아웃·rate limit 등)하면 502로 변환하고 저장하지 않아야 한다", async () => {
+      mockApplication.findFirst.mockResolvedValue(fakeApplication as never);
+      mockUser.findUnique.mockResolvedValue(fakeUser as never);
+      mockProject.findMany.mockResolvedValue(fakeProjects as never);
+      mockStudy.findMany.mockResolvedValue(fakeStudies as never);
+      mockCreate.mockRejectedValue(new Error("Request timed out."));
+
+      await expect(generateCoverLetter(USER_ID, APPLICATION_ID)).rejects.toMatchObject({
+        message: "AI 응답 생성에 실패했습니다. 잠시 후 다시 시도해주세요.",
+        statusCode: 502,
+      });
+      expect(mockAiAnalysis.create).not.toHaveBeenCalled();
+    });
+
+    it("AI 응답 이후 DB 저장 실패는 502로 감추지 않고 그대로 던져야 한다", async () => {
+      mockApplication.findFirst.mockResolvedValue(fakeApplication as never);
+      mockUser.findUnique.mockResolvedValue(fakeUser as never);
+      mockProject.findMany.mockResolvedValue(fakeProjects as never);
+      mockStudy.findMany.mockResolvedValue(fakeStudies as never);
+      mockCreate.mockResolvedValue({ choices: [{ message: { content: "자소서" } }] } as never);
+      mockAiAnalysis.create.mockRejectedValue(new Error("db down"));
+
+      await expect(generateCoverLetter(USER_ID, APPLICATION_ID)).rejects.toThrow("db down");
     });
   });
 

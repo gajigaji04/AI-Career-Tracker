@@ -1,5 +1,6 @@
 import { prisma } from "../prisma/prisma";
 import { AppError } from "../errors/AppError";
+import type { Prisma } from "@prisma/client";
 
 interface CreateStudyDto {
   title: string;
@@ -12,7 +13,10 @@ interface CreateStudyDto {
 export const createStudy = async (userId: string, data: CreateStudyDto) => {
   return prisma.study.create({
     data: {
-      ...data,
+      title: data.title,
+      content: data.content,
+      category: data.category,
+      studyTime: data.studyTime,
       studyDate: new Date(data.studyDate),
       userId,
     },
@@ -53,15 +57,24 @@ export const updateStudy = async (
     content?: string;
     category?: string;
     studyTime?: number;
+    studyDate?: string;
   },
 ) => {
   await getStudyById(id, userId);
+
+  // 요청 객체를 그대로 넘기지 않고 허용 필드만 골라서 전달 (userId 등 변경 차단)
+  const updateData: Prisma.StudyUpdateInput = {};
+  if (data.title !== undefined) updateData.title = data.title;
+  if (data.content !== undefined) updateData.content = data.content;
+  if (data.category !== undefined) updateData.category = data.category;
+  if (data.studyTime !== undefined) updateData.studyTime = data.studyTime;
+  if (data.studyDate !== undefined) updateData.studyDate = new Date(data.studyDate);
 
   return prisma.study.update({
     where: {
       id,
     },
-    data,
+    data: updateData,
   });
 };
 

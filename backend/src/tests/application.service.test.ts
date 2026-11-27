@@ -179,6 +179,19 @@ describe("ApplicationService", () => {
       });
     });
 
+    it("허용되지 않은 필드(userId 등)가 섞여 와도 Prisma에는 허용 필드만 전달해야 한다", async () => {
+      mockApplication.findFirst.mockResolvedValue(fakeApplication as never);
+      mockApplication.update.mockResolvedValue(updatedApplication as never);
+
+      const tampered = { ...updateData, userId: "other-user" };
+      await updateApplication(APPLICATION_ID, USER_ID, tampered as typeof updateData);
+
+      expect(mockApplication.update).toHaveBeenCalledWith({
+        where: { id: APPLICATION_ID },
+        data: updateData,
+      });
+    });
+
     it("존재하지 않는 지원 내역이면 404 에러를 던지고 update는 호출하지 않아야 한다", async () => {
       mockApplication.findFirst.mockResolvedValue(null);
 

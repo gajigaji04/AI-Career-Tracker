@@ -14,7 +14,7 @@ import resumeRouter from "./routes/resume.route";
 
 import { errorHandler } from "./middlewares/error.middleware";
 import { prisma } from "./prisma/prisma";
-// import { logger } from "./config/logger";
+import { logger } from "./config/logger";
 
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger";
@@ -23,20 +23,30 @@ const app = express();
 
 // CSP is already applied at the Nginx edge for the frontend; disabling it here avoids
 // breaking Swagger UI's inline script at /api-docs while keeping helmet's other headers.
+app.use(helmet({ contentSecurityPolicy: false }));
+
+// ALLOWED_ORIGIN 은 콤마로 여러 개 지정 가능 (예: "https://a.com,http://localhost:5173")
 const allowedOrigins = (process.env.ALLOWED_ORIGIN ?? "http://localhost:5173")
   .split(",")
-  .map((o) => o.trim());
+  .map((o) => o.trim())
+  .filter(Boolean);
 
 app.use(
   cors({
+    // 허용되지 않은 Origin 은 에러(500) 대신 CORS 헤더만 생략 → 브라우저가 차단
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error(`Not allowed by CORS: ${origin}`));
-      }
+      callback(null, !origin || allowedOrigins.includes(origin));
     },
     credentials: true,
+  }),
+);
+app.use(cookieParser());
+app.use(express.json());
+// 요청마다 고유 ID를 붙여서, 장애가 나면 그 요청 하나의 로그만 골라 추적할 수 있게 함.
+app.use(
+  pinoHttp({
+    logger,
+    autoLogging: { ignore: (req) => req.url === "/health" },
   }),
 );
 
@@ -57,18 +67,6 @@ app.get("/health", async (_req, res) => {
   } catch {
     res.status(503).json({ status: "error", db: "disconnected" });
   }
-});
-
-app.get("/", (_req, res) => {
-  res.send(`
-    <h1>✅ 백엔드 실행 중</h1>
-    <p>
-      프론트엔드 접속:
-      <a href="http://localhost:5173/applications">
-        http://localhost:5173/applications
-      </a>
-    </p>
-  `);
 });
 
 app.use(errorHandler);

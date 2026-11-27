@@ -12,5 +12,7 @@ export const validate =
       });
     }
 
+    // 원본 body 대신 Zod 가 검증·정제한 값만 다음 단계로 전달 (스키마에 없는 키 제거)
+    req.body = result.data;
     next();
   };

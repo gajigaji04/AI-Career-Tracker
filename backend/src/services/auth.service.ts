@@ -6,11 +6,20 @@ import { prisma } from "../prisma/prisma";
 import { AppError } from "../errors/AppError";
 import { logger } from "../config/logger";
 import { sendSms } from "./sms.service";
+import { Prisma } from "@prisma/client";
 import type { ExperienceLevel } from "@prisma/client";
 
 const getResendClient = () => new Resend(process.env.RESEND_API_KEY);
+
+// 존재하지 않는 계정으로 로그인할 때도 bcrypt 비교를 한 번 수행해서
+// 응답 시간 차이로 계정 존재 여부가 드러나지 않게 하기 위한 더미 해시 (어떤 비밀번호와도 불일치)
+const DUMMY_PASSWORD_HASH = "$2b$10$XyCTPh59ZKOsMUksXMleDOEqppc/8u2iP4YJDhxyWbZlPF4RGf7yG";
+const INVALID_CREDENTIALS_MESSAGE = "이메일 또는 비밀번호가 올바르지 않습니다.";
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
 const PHONE_CODE_TTL_MS = 5 * 60 * 1000;
+// 인증번호 하나당 허용하는 검증 시도 횟수. 초과 시 코드 폐기 → 새로 요청해야 함
+export const MAX_PHONE_CODE_ATTEMPTS = 5;
+const INVALID_PHONE_CODE_MESSAGE = "인증번호가 올바르지 않거나 만료되었습니다.";
 
 interface RegisterDto {
   email: string;
@@ -38,40 +47,43 @@ export const register = async ({
   const existing = await prisma.user.findUnique({ where: { email } });
 
   if (existing) {
-    throw new Error("이미 사용 중인 이메일입니다.");
+    throw new AppError("이미 사용 중인 이메일입니다.", 409);
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const user = await prisma.user.create({
-    data: {
-      email,
-      password: hashedPassword,
-      name,
-      nickname,
-      phone: phone ?? null,
-      jobTitle: jobTitle ?? null,
-      experienceLevel: experienceLevel ?? null,
-      yearsOfExperience: yearsOfExperience ?? null,
-      interestedStack: interestedStack ?? [],
-    },
-    select: { id: true, email: true, name: true, nickname: true },
-  });
-
-  return user;
+  try {
+    return await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        name,
+        nickname,
+        phone: phone ?? null,
+        jobTitle: jobTitle ?? null,
+        experienceLevel: experienceLevel ?? null,
+        yearsOfExperience: yearsOfExperience ?? null,
+        interestedStack: interestedStack ?? [],
+      },
+      select: { id: true, email: true, name: true, nickname: true },
+    });
+  } catch (error) {
+    // 휴대폰 번호 중복, 또는 위 이메일 확인 직후 동시 가입된 경우 (unique 제약 위반)
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      throw new AppError("이미 사용 중인 이메일 또는 휴대폰 번호입니다.", 409);
+    }
+    throw error;
+  }
 };
 
 export const login = async (email: string, password: string) => {
   const user = await prisma.user.findUnique({ where: { email } });
 
-  if (!user) {
-    throw new AppError("사용자를 찾을 수 없습니다.", 404);
-  }
+  // 계정 없음 / 비밀번호 불일치를 같은 상태 코드·메시지·처리 시간으로 응답 (계정 존재 여부 비노출)
+  const isMatch = await bcrypt.compare(password, user?.password ?? DUMMY_PASSWORD_HASH);
 
-  const isMatch = await bcrypt.compare(password, user.password);
-
-  if (!isMatch) {
-    throw new AppError("비밀번호가 일치하지 않습니다.", 401);
+  if (!user || !isMatch) {
+    throw new AppError(INVALID_CREDENTIALS_MESSAGE, 401);
   }
 
   const accessToken = jwt.sign(
@@ -198,7 +210,11 @@ export const requestFindEmail = async (phone: string) => {
 
   await prisma.user.update({
     where: { id: user.id },
-    data: { phoneVerificationCode: code, phoneVerificationCodeExpiresAt: expiresAt },
+    data: {
+      phoneVerificationCode: code,
+      phoneVerificationCodeExpiresAt: expiresAt,
+      phoneVerificationAttempts: 0,
+    },
   });
 
   try {
@@ -209,25 +225,63 @@ export const requestFindEmail = async (phone: string) => {
 };
 
 // 인증번호 확인 후 마스킹 없이 이메일 반환 (휴대폰 소유를 이미 증명했으므로)
+// 미등록 번호 / 코드 없음 / 만료 / 불일치 / 시도 횟수 초과 모두 같은 400 응답 (번호 등록 여부 비노출)
 export const verifyFindEmail = async (phone: string, code: string) => {
   const user = await prisma.user.findUnique({ where: { phone } });
 
-  if (
-    !user ||
-    !user.phoneVerificationCode ||
-    !user.phoneVerificationCodeExpiresAt ||
-    user.phoneVerificationCode !== code ||
-    user.phoneVerificationCodeExpiresAt < new Date()
-  ) {
-    throw new AppError("인증번호가 올바르지 않거나 만료되었습니다.", 400);
+  if (!user || !user.phoneVerificationCode || !user.phoneVerificationCodeExpiresAt) {
+    throw new AppError(INVALID_PHONE_CODE_MESSAGE, 400);
   }
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { phoneVerificationCode: null, phoneVerificationCodeExpiresAt: null },
+  const clearCode = () =>
+    prisma.user.update({
+      where: { id: user.id },
+      data: {
+        phoneVerificationCode: null,
+        phoneVerificationCodeExpiresAt: null,
+        phoneVerificationAttempts: 0,
+      },
+    });
+
+  if (user.phoneVerificationCodeExpiresAt < new Date()) {
+    await clearCode();
+    throw new AppError(INVALID_PHONE_CODE_MESSAGE, 400);
+  }
+
+  // 비교 전에 시도 횟수를 원자적으로 먼저 차감한다. 동시 요청이 들어와도
+  // 조건(lt: MAX)을 통과한 요청만 비교할 수 있으므로 총 시도가 MAX 를 넘지 않는다.
+  const claimed = await prisma.user.updateMany({
+    where: {
+      id: user.id,
+      phoneVerificationCode: user.phoneVerificationCode,
+      phoneVerificationAttempts: { lt: MAX_PHONE_CODE_ATTEMPTS },
+    },
+    data: { phoneVerificationAttempts: { increment: 1 } },
   });
 
+  if (claimed.count === 0) {
+    await clearCode();
+    throw new AppError(INVALID_PHONE_CODE_MESSAGE, 400);
+  }
+
+  if (!isSameCode(user.phoneVerificationCode, code)) {
+    // 이번 시도로 최대 횟수에 도달했으면 코드 폐기
+    if (user.phoneVerificationAttempts + 1 >= MAX_PHONE_CODE_ATTEMPTS) {
+      await clearCode();
+    }
+    throw new AppError(INVALID_PHONE_CODE_MESSAGE, 400);
+  }
+
+  await clearCode();
+
   return { email: user.email };
+};
+
+// 문자열 비교 시간으로 코드 자릿수 일치 여부를 추측할 수 없도록 상수 시간 비교
+const isSameCode = (expected: string, actual: string) => {
+  const a = Buffer.from(expected);
+  const b = Buffer.from(actual);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
 };
 
 export const getMe = async (userId: string) => {
