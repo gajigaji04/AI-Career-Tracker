@@ -1,37 +1,23 @@
-// import { Request, Response, NextFunction } from "express";
-// import { AppError } from "../errors/AppError";
-
-// export const errorHandler = (
-//   error: Error,
-//   req: Request,
-//   res: Response,
-//   next: NextFunction,
-// ) => {
-//   if (error instanceof AppError) {
-//     return res.status(error.statusCode).json({
-//       success: false,
-//       message: error.message,
-//     });
-//   }
-
-//   req.log.error({ err: error }, "unhandled error");
-
-//   return res.status(500).json({
-//     success: false,
-//     message: "Internal Server Error",
-//   });
-// };
 import { Request, Response, NextFunction } from "express";
+import { AppError } from "../errors/AppError";
 
 export const errorHandler = (
-  err: unknown,
-  _req: Request,
+  error: Error,
+  req: Request,
   res: Response,
-  _next: NextFunction,
+  next: NextFunction,
 ) => {
-  console.error("🔥 ERROR:", err);
+  if (error instanceof AppError) {
+    return res.status(error.statusCode).json({
+      success: false,
+      message: error.message,
+    });
+  }
 
-  res.status(500).json({
+  req.log.error({ err: error }, "unhandled error");
+
+  return res.status(500).json({
+    success: false,
     message: "Internal Server Error",
   });
 };

@@ -11,6 +11,8 @@ type ToastContextValue = {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
+// Provider와 훅을 한 파일에 두는 Context 패턴 — 이 파일만 Fast Refresh 대신 전체 리로드됨
+// eslint-disable-next-line react-refresh/only-export-components
 export function useToast() {
   const ctx = useContext(ToastContext);
   if (!ctx) throw new Error("useToast는 ToastProvider 내부에서만 사용할 수 있습니다.");
