@@ -1,72 +1,56 @@
 .header {
-  display: flex;
+  position: sticky;
+  top: 0;
+  z-index: calc(var(--z-sidebar) - 2);
+  display: none;
   align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 16px 32px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg);
-  flex-shrink: 0;
+  gap: var(--space-2);
+  height: 56px;
+  padding: 0 var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
 .menuBtn {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: transparent;
-  font-size: 20px;
-  line-height: 1;
-  color: var(--text-h);
-  cursor: pointer;
-  margin-right: auto;
-
-  @media (max-width: 768px) {
-    display: flex;
-  }
-}
-
-.user {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.avatar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--accent-bg);
-  color: var(--accent);
-  font-size: 13px;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.name {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text);
-}
-
-.logoutBtn {
-  padding: 7px 14px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text);
-  background: transparent;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-text-strong);
   cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
 }
 
-.logoutBtn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
+.menuBtn:hover {
+  background: var(--color-surface-muted);
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-strong);
+}
+
+.logoMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-xs);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+@media (max-width: 768px) {
+  .header {
+    display: flex;
+  }
 }
