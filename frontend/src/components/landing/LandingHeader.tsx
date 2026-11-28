@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../common/Button";
+import Icon from "../common/Icon";
 import styles from "./LandingHeader.module.css";
 
 export default function LandingHeader() {
@@ -8,12 +9,14 @@ export default function LandingHeader() {
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
-        <span className={styles.logo}>
-          <span className={styles.logoIcon}>✦</span>
+        <Link to="/" className={styles.logo}>
+          <span className={styles.logoIcon} aria-hidden="true">
+            <Icon name="target" size={15} strokeWidth={2} />
+          </span>
           CareerHub
-        </span>
+        </Link>
 
-        <nav className={styles.actions}>
+        <nav className={styles.actions} aria-label="계정">
           <Link to="/login" className={styles.loginLink}>
             로그인
           </Link>

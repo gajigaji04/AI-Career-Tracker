@@ -63,8 +63,8 @@ export default function FindEmailPage() {
             className={styles.form}
           >
             <div className={styles.field}>
-              <label className={styles.label}>휴대폰 번호</label>
-              <input
+              <label htmlFor="find-email-field-1" className={styles.label}>휴대폰 번호</label>
+              <input id="find-email-field-1"
                 type="tel"
                 placeholder="01012345678"
                 value={phone}
@@ -74,7 +74,7 @@ export default function FindEmailPage() {
               />
             </div>
 
-            {error && <p className={styles.error}>{error}</p>}
+            {error && <p className={styles.error} role="alert">{error}</p>}
 
             <button type="submit" className={styles.button} disabled={isLoading}>
               {isLoading ? <span className={styles.spinner} /> : "인증번호 받기"}
@@ -91,13 +91,13 @@ export default function FindEmailPage() {
             }}
             className={styles.form}
           >
-            <p className={styles.success}>
+            <p className={styles.success} role="status">
               {phone}(으)로 인증번호를 발송했습니다. (5분 이내 입력)
             </p>
 
             <div className={styles.field}>
-              <label className={styles.label}>인증번호</label>
-              <input
+              <label htmlFor="find-email-field-2" className={styles.label}>인증번호</label>
+              <input id="find-email-field-2"
                 type="text"
                 placeholder="6자리 숫자"
                 value={code}
@@ -108,7 +108,7 @@ export default function FindEmailPage() {
               />
             </div>
 
-            {error && <p className={styles.error}>{error}</p>}
+            {error && <p className={styles.error} role="alert">{error}</p>}
 
             <button type="submit" className={styles.button} disabled={isLoading}>
               {isLoading ? <span className={styles.spinner} /> : "확인"}
@@ -117,7 +117,7 @@ export default function FindEmailPage() {
         )}
 
         {step === "result" && (
-          <p className={styles.success}>
+          <p className={styles.success} role="status">
             회원님의 이메일은 <strong>{email}</strong> 입니다.
           </p>
         )}

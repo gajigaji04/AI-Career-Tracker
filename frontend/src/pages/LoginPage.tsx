@@ -38,10 +38,10 @@ export default function LoginPage() {
         </div>
 
         {justRegistered && (
-          <p className={styles.success}>회원가입이 완료됐습니다. 로그인해주세요.</p>
+          <p className={styles.success} role="status">회원가입이 완료됐습니다. 로그인해주세요.</p>
         )}
         {justResetPassword && (
-          <p className={styles.success}>비밀번호가 재설정됐습니다. 새 비밀번호로 로그인해주세요.</p>
+          <p className={styles.success} role="status">비밀번호가 재설정됐습니다. 새 비밀번호로 로그인해주세요.</p>
         )}
 
         <form
@@ -51,12 +51,12 @@ export default function LoginPage() {
         >
           <div className={styles.field}>
             <div className={styles.labelRow}>
-              <label className={styles.label}>이메일</label>
+              <label htmlFor="login-field-1" className={styles.label}>이메일</label>
               <Link to="/find-email" className={styles.forgotLink}>
                 아이디 찾기
               </Link>
             </div>
-            <input
+            <input id="login-field-1"
               type="email"
               placeholder="example@email.com"
               value={email}
@@ -68,12 +68,12 @@ export default function LoginPage() {
 
           <div className={styles.field}>
             <div className={styles.labelRow}>
-              <label className={styles.label}>비밀번호</label>
+              <label htmlFor="login-field-2" className={styles.label}>비밀번호</label>
               <Link to="/forgot-password" className={styles.forgotLink}>
                 비밀번호 찾기
               </Link>
             </div>
-            <input
+            <input id="login-field-2"
               type="password"
               placeholder="비밀번호를 입력하세요"
               value={password}
@@ -83,7 +83,7 @@ export default function LoginPage() {
             />
           </div>
 
-          {error && <p className={styles.error}>{error}</p>}
+          {error && <p className={styles.error} role="alert">{error}</p>}
 
           <button type="submit" className={styles.button} disabled={isLoading}>
             {isLoading ? <span className={styles.spinner} /> : "로그인"}

@@ -172,8 +172,8 @@ export default function RegisterPage() {
           className={styles.form}
         >
           <div className={styles.field}>
-            <label className={styles.label}>이메일</label>
-            <input
+            <label htmlFor="register-field-1" className={styles.label}>이메일</label>
+            <input id="register-field-1"
               type="email"
               placeholder="example@email.com"
               className={styles.input}
@@ -184,8 +184,8 @@ export default function RegisterPage() {
 
           <div className={styles.row}>
             <div className={styles.field}>
-              <label className={styles.label}>비밀번호</label>
-              <input
+              <label htmlFor="register-field-2" className={styles.label}>비밀번호</label>
+              <input id="register-field-2"
                 type="password"
                 placeholder="8자 이상"
                 className={styles.input}
@@ -212,8 +212,8 @@ export default function RegisterPage() {
             </div>
 
             <div className={styles.field}>
-              <label className={styles.label}>비밀번호 확인</label>
-              <input
+              <label htmlFor="register-field-3" className={styles.label}>비밀번호 확인</label>
+              <input id="register-field-3"
                 type="password"
                 placeholder="비밀번호 재입력"
                 className={styles.input}
@@ -228,8 +228,8 @@ export default function RegisterPage() {
 
           <div className={styles.row}>
             <div className={styles.field}>
-              <label className={styles.label}>이름</label>
-              <input
+              <label htmlFor="register-field-4" className={styles.label}>이름</label>
+              <input id="register-field-4"
                 type="text"
                 placeholder="홍길동"
                 className={styles.input}
@@ -239,8 +239,8 @@ export default function RegisterPage() {
             </div>
 
             <div className={styles.field}>
-              <label className={styles.label}>닉네임</label>
-              <input
+              <label htmlFor="register-field-5" className={styles.label}>닉네임</label>
+              <input id="register-field-5"
                 type="text"
                 placeholder="다른 사용자에게 보일 이름"
                 className={styles.input}
@@ -253,8 +253,8 @@ export default function RegisterPage() {
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>휴대폰 번호 (선택)</label>
-            <input
+            <label htmlFor="register-field-6" className={styles.label}>휴대폰 번호 (선택)</label>
+            <input id="register-field-6"
               type="tel"
               placeholder="01012345678"
               className={styles.input}
@@ -288,12 +288,12 @@ export default function RegisterPage() {
 
           <div className={styles.row}>
             <div className={styles.field}>
-              <label className={styles.label}>경력 수준</label>
+              <label htmlFor="register-field-7" className={styles.label}>경력 수준</label>
               <Controller
                 control={control}
                 name="experienceLevel"
                 render={({ field }) => (
-                  <select {...field} className={styles.select}>
+                  <select id="register-field-7" {...field} className={styles.select}>
                     <option value="">선택 안 함</option>
                     {EXPERIENCE_LEVELS.map((level) => (
                       <option key={level.value} value={level.value}>
@@ -307,8 +307,8 @@ export default function RegisterPage() {
 
             {YEARS_INPUT_LEVELS.includes(experienceLevel as ExperienceLevel) && (
               <div className={styles.field}>
-                <label className={styles.label}>경력 연차</label>
-                <input
+                <label htmlFor="register-field-8" className={styles.label}>경력 연차</label>
+                <input id="register-field-8"
                   type="number"
                   min={0}
                   max={60}
@@ -321,8 +321,8 @@ export default function RegisterPage() {
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>관심 기술 스택</label>
-            <input
+            <label htmlFor="register-field-9" className={styles.label}>관심 기술 스택</label>
+            <input id="register-field-9"
               type="text"
               placeholder="기술 스택 검색 (예: react)"
               className={styles.input}
@@ -340,6 +340,7 @@ export default function RegisterPage() {
                   key={stack}
                   type="button"
                   onClick={() => toggleStack(stack)}
+                  aria-pressed={selectedStack.includes(stack)}
                   className={`${styles.chip} ${
                     selectedStack.includes(stack) ? styles.chipActive : ""
                   }`}
@@ -353,7 +354,7 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {submitError && <p className={styles.error}>{submitError}</p>}
+          {submitError && <p className={styles.error} role="alert">{submitError}</p>}
 
           <button type="submit" className={styles.button} disabled={isSubmitting}>
             {isSubmitting ? <span className={styles.spinner} /> : "회원가입"}

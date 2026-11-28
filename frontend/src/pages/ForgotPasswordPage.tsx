@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
         </div>
 
         {submitted ? (
-          <p className={styles.success}>
+          <p className={styles.success} role="status">
             입력하신 이메일이 가입되어 있다면, 재설정 링크를 발송했습니다. 메일함을 확인해주세요. (1시간 동안 유효)
           </p>
         ) : (
@@ -43,8 +43,8 @@ export default function ForgotPasswordPage() {
             className={styles.form}
           >
             <div className={styles.field}>
-              <label className={styles.label}>이메일</label>
-              <input
+              <label htmlFor="forgot-field-1" className={styles.label}>이메일</label>
+              <input id="forgot-field-1"
                 type="email"
                 placeholder="example@email.com"
                 value={email}

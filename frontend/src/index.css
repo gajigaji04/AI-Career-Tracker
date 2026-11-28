@@ -144,22 +144,6 @@
   --z-modal: 100;
   --z-toast: 1000;
 
-  /* ---- 레거시 별칭: 페이지 리디자인(5~6단계) 이후 제거 예정 ---- */
-  --text: var(--color-text);
-  --text-h: var(--color-text-strong);
-  --text-muted: var(--color-text-muted);
-  --bg: var(--color-surface);
-  --surface: var(--color-surface);
-  --border: var(--color-border);
-  --code-bg: var(--color-surface-muted);
-  --accent: var(--color-primary);
-  --accent-bg: var(--color-primary-subtle);
-  --accent-border: var(--color-primary-border);
-  --shadow: var(--shadow-md);
-  --sans: var(--font-sans);
-  --heading: var(--font-sans);
-  --mono: var(--font-mono);
-
   color-scheme: light;
   font-family: var(--font-sans);
   font-size: var(--text-base);

@@ -1,43 +1,55 @@
+/* 로그인·비밀번호 찾기·재설정·이메일 찾기 공용 인증 폼 스타일 */
 .card {
   width: 100%;
   max-width: 400px;
-  padding: 8px 4px;
 }
 
 /* ── 헤더 ── */
 .header {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-8);
 }
 
 .title {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  color: var(--text-h);
-  margin: 0 0 6px;
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-strong);
 }
 
 .subtitle {
-  font-size: 14px;
-  color: var(--text);
   margin: 0;
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+}
+
+.success,
+.error {
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  text-align: left;
 }
 
 .success {
-  font-size: 13px;
-  color: #16a34a;
-  background: rgba(22, 163, 74, 0.08);
-  border: 1px solid rgba(22, 163, 74, 0.2);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  margin: 0 0 20px;
+  margin-bottom: var(--space-5);
+  border-color: var(--color-success-border);
+  background: var(--color-success-subtle);
+  color: var(--color-success);
+}
+
+.error {
+  border-color: var(--color-danger-border);
+  background: var(--color-danger-subtle);
+  color: var(--color-danger);
 }
 
 /* ── 폼 ── */
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-5);
 }
 
 .field {
@@ -54,15 +66,15 @@
 }
 
 .label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-h);
-  letter-spacing: 0.1px;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-strong);
 }
 
 .forgotLink {
-  font-size: 12px;
-  color: var(--accent);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-primary);
   text-decoration: none;
 }
 
@@ -72,95 +84,107 @@
 
 .input {
   width: 100%;
-  padding: 11px 14px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 15px;
-  color: var(--text-h);
-  background: var(--bg);
+  height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  font-size: var(--text-md);
+  color: var(--color-text-strong);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  box-sizing: border-box;
+  transition:
+    border-color var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease;
 }
 
 .input::placeholder {
-  color: #b0aab8;
+  color: var(--color-text-subtle);
+}
+
+.input:hover:not(:focus):not(:disabled) {
+  border-color: var(--gray-400);
 }
 
 .input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-bg);
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
 }
 
-/* ── 에러 메시지 ── */
-.error {
-  font-size: 13px;
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  margin: 0;
-  text-align: left;
+.input:disabled {
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
 }
 
 /* ── 버튼 ── */
 .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  padding: 13px;
-  margin-top: 4px;
-  background: var(--accent);
-  color: #ffffff;
+  height: 44px;
+  margin-top: var(--space-1);
   border: none;
-  border-radius: var(--radius-sm);
-  font-size: 15px;
-  font-weight: 600;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  box-shadow: var(--shadow-xs);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-inverse);
   cursor: pointer;
-  transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
-  box-shadow: 0 4px 14px -2px rgba(170, 59, 255, 0.4);
+  transition:
+    background-color var(--duration-fast) ease,
+    transform var(--duration-fast) ease;
 }
 
-.button:hover {
-  opacity: 0.9;
-  box-shadow: 0 6px 20px -2px rgba(170, 59, 255, 0.5);
+.button:hover:not(:disabled) {
+  background: var(--color-primary-hover);
 }
 
-.button:active {
+.button:active:not(:disabled) {
   transform: scale(0.98);
 }
 
-.button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
+.button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
-/* ── 로딩 스피너 ── */
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── 로딩 스피너 (버튼 안) ── */
 .spinner {
   display: inline-block;
   width: 18px;
   height: 18px;
-  border: 2px solid rgba(255, 255, 255, 0.35);
-  border-top-color: #fff;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── 하단 안내 ── */
 .footer {
+  margin: var(--space-6) 0 0;
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--text-base);
   text-align: center;
-  font-size: 14px;
-  color: var(--text);
-  margin: 24px 0 0;
+  color: var(--color-text-muted);
 }
 
 .link {
-  color: var(--accent);
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
+  color: var(--color-primary);
   text-decoration: none;
 }
 

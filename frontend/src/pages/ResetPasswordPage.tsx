@@ -71,8 +71,8 @@ export default function ResetPasswordPage() {
           className={styles.form}
         >
           <div className={styles.field}>
-            <label className={styles.label}>새 비밀번호</label>
-            <input
+            <label htmlFor="reset-field-1" className={styles.label}>새 비밀번호</label>
+            <input id="reset-field-1"
               type="password"
               placeholder="8자 이상"
               value={password}
@@ -83,8 +83,8 @@ export default function ResetPasswordPage() {
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>새 비밀번호 확인</label>
-            <input
+            <label htmlFor="reset-field-2" className={styles.label}>새 비밀번호 확인</label>
+            <input id="reset-field-2"
               type="password"
               placeholder="비밀번호 재입력"
               value={passwordConfirm}
@@ -94,7 +94,7 @@ export default function ResetPasswordPage() {
             />
           </div>
 
-          {error && <p className={styles.error}>{error}</p>}
+          {error && <p className={styles.error} role="alert">{error}</p>}
 
           <button type="submit" className={styles.button} disabled={isLoading}>
             {isLoading ? <span className={styles.spinner} /> : "비밀번호 재설정"}

@@ -183,6 +183,15 @@ const ICONS = {
   message: (
     <path d="M21 12a8 8 0 0 1-11.6 7.1L3 21l1.9-6.4A8 8 0 1 1 21 12Z" />
   ),
+  lock: (
+    <>
+      <rect x="4" y="11" width="16" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </>
+  ),
+  shield: (
+    <path d="M12 21s-7-3.5-7-9.5V5.5L12 3l7 2.5v6C19 17.5 12 21 12 21Z" />
+  ),
   moreHorizontal: (
     <path d="M5 12h.01M12 12h.01M19 12h.01" />
   ),
