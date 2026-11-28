@@ -5,129 +5,155 @@ import { useApplication } from "../hooks/useApplication";
 import StatCard from "../components/dashboard/StatCard";
 import ApplicationChart from "../components/dashboard/ApplicationChart";
 import Badge from "../components/common/Badge";
+import Card from "../components/common/Card";
 import EmptyState from "../components/common/EmptyState";
+import Icon from "../components/common/Icon";
+import PageHeader from "../components/common/PageHeader";
 import PageState from "../components/common/PageState";
+import Table from "../components/common/Table";
+import {
+  APPLICATION_STATUSES,
+  IN_PROGRESS_STATUSES,
+  formatDate,
+} from "../constants/application";
+import type { ApplicationItem } from "../constants/application";
 import styles from "./DashboardPage.module.css";
-import type { ApplicationStatus } from "../api/application";
-
-type Application = {
-  id: string;
-  companyName: string;
-  position: string;
-  status: ApplicationStatus;
-  createdAt: string;
-};
-
-const STATUS_LABEL: Record<ApplicationStatus, string> = {
-  APPLIED: "지원",
-  DOCUMENT_PASS: "서류통과",
-  INTERVIEW: "면접",
-  FINAL_PASS: "최종합격",
-  REJECTED: "불합격",
-};
-
-const STATUS_ORDER: ApplicationStatus[] = [
-  "APPLIED",
-  "DOCUMENT_PASS",
-  "INTERVIEW",
-  "FINAL_PASS",
-  "REJECTED",
-];
-
-const IN_PROGRESS: ApplicationStatus[] = ["APPLIED", "DOCUMENT_PASS", "INTERVIEW"];
 
 export default function DashboardPage() {
   const { data: meData } = useMe();
-  const { data, isLoading, isError } = useDashboard();
-  const { data: appData } = useApplication();
+  const dashboard = useDashboard();
+  const applicationsQuery = useApplication();
 
-  const applications: Application[] = appData?.data ?? [];
+  const counts = dashboard.data?.data;
+  const applications: ApplicationItem[] = applicationsQuery.data?.data ?? [];
 
-  const chartData = STATUS_ORDER.map((status) => ({
-    status: STATUS_LABEL[status],
-    count: applications.filter((a) => a.status === status).length,
-  }));
+  const countOf = (status: ApplicationItem["status"]) =>
+    applications.filter((a) => a.status === status).length;
 
-  const hasApplications = chartData.some((d) => d.count > 0);
-
-  const inProgressCount = applications.filter((a) =>
-    IN_PROGRESS.includes(a.status),
-  ).length;
+  const chartData = APPLICATION_STATUSES.map((status) => ({ status, count: countOf(status) }));
+  const hasApplications = applications.length > 0;
+  const inProgressCount = applications.filter((a) => IN_PROGRESS_STATUSES.includes(a.status)).length;
 
   const recentApplications = [...applications]
-    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
-    .slice(0, 4);
+    .sort((a, b) => ((a.createdAt ?? "") < (b.createdAt ?? "") ? 1 : -1))
+    .slice(0, 5);
 
   const firstName = meData?.data?.name?.trim();
   const hour = new Date().getHours();
-  const timeGreeting = hour < 12 ? "좋은 아침이에요" : hour < 18 ? "오늘도 화이팅이에요" : "오늘 하루도 고생하셨어요";
+  const timeGreeting =
+    hour < 12 ? "좋은 아침이에요" : hour < 18 ? "오늘도 화이팅이에요" : "오늘 하루도 고생하셨어요";
 
   return (
     <div className={styles.page}>
-      <div className={styles.greeting}>
-        <h1 className={styles.name}>{firstName}님, {timeGreeting}</h1>
-        <p className={styles.email}>{meData?.data?.email}</p>
-      </div>
+      <PageHeader
+        title={firstName ? `${firstName}님, ${timeGreeting}` : timeGreeting}
+        description="지원 현황과 커리어 기록을 한눈에 확인하세요."
+      />
 
-      <PageState isLoading={isLoading} isError={isError}>
-        <div className={styles.stats}>
+      <PageState
+        isLoading={dashboard.isLoading || applicationsQuery.isLoading}
+        isError={dashboard.isError || applicationsQuery.isError}
+        onRetry={() => {
+          void dashboard.refetch();
+          void applicationsQuery.refetch();
+        }}
+      >
+        <section className={styles.stats} aria-label="지원 요약">
+          <StatCard label="전체 지원" value={counts?.applications ?? 0} icon="briefcase" />
           <StatCard
-            icon="📚"
-            label="학습 기록"
-            value={data?.data?.studies ?? 0}
-            tone="violet"
+            label="진행 중"
+            value={inProgressCount}
+            icon="clock"
+            tone="primary"
+            hint="지원 · 서류통과 · 면접 단계"
           />
-          <StatCard
-            icon="🗂️"
-            label="프로젝트"
-            value={data?.data?.projects ?? 0}
-            tone="blue"
-          />
-          <StatCard
-            icon="📈"
-            label="지원 현황"
-            value={data?.data?.applications ?? 0}
-            tone="green"
-            hint={inProgressCount > 0 ? `진행 중 ${inProgressCount}건` : undefined}
-          />
-        </div>
+          <StatCard label="면접 단계" value={countOf("INTERVIEW")} icon="message" tone="warning" />
+          <StatCard label="최종 합격" value={countOf("FINAL_PASS")} icon="trophy" tone="success" />
+        </section>
 
         <div className={styles.grid}>
-          {hasApplications ? (
-            <ApplicationChart data={chartData} />
-          ) : (
-            <div className={styles.chartEmpty}>
-              <EmptyState icon="📈" message="지원 현황을 기록하면 여기에 통계가 표시됩니다." />
-            </div>
-          )}
-
-          <div className={styles.recentCard}>
-            <div className={styles.recentHeader}>
-              <p className={styles.cardTitle}>최근 지원 현황</p>
-              <Link to="/app/applications" className={styles.recentLink}>
-                전체 보기
-              </Link>
-            </div>
-
-            {recentApplications.length > 0 ? (
-              <ul className={styles.recentList}>
-                {recentApplications.map((application) => (
-                  <li key={application.id} className={styles.recentItem}>
-                    <div className={styles.recentItemText}>
-                      <span className={styles.recentCompany}>{application.companyName}</span>
-                      <span className={styles.recentPosition}>{application.position}</span>
-                    </div>
-                    <Badge status={application.status} />
-                  </li>
-                ))}
-              </ul>
+          <Card
+            title="전형 단계별 분포"
+            description={hasApplications ? `전체 ${applications.length}건 기준` : undefined}
+          >
+            {hasApplications ? (
+              <ApplicationChart data={chartData} />
             ) : (
-              <div className={styles.chartEmpty}>
-                <EmptyState icon="🗒️" message="아직 등록된 지원 현황이 없습니다." />
-              </div>
+              <EmptyState
+                compact
+                icon="chart"
+                message="지원 내역을 기록하면 단계별 통계가 표시됩니다."
+              />
             )}
-          </div>
+          </Card>
+
+          <Card title="커리어 기록" padding="none">
+            <ul className={styles.records}>
+              <li>
+                <Link to="/app/studies" className={styles.recordLink}>
+                  <span className={styles.recordIcon}>
+                    <Icon name="book" size={16} />
+                  </span>
+                  <span className={styles.recordLabel}>학습 기록</span>
+                  <span className={`${styles.recordValue} num`}>{counts?.studies ?? 0}건</span>
+                  <Icon name="chevronRight" size={16} className={styles.recordChevron} />
+                </Link>
+              </li>
+              <li>
+                <Link to="/app/projects" className={styles.recordLink}>
+                  <span className={styles.recordIcon}>
+                    <Icon name="folder" size={16} />
+                  </span>
+                  <span className={styles.recordLabel}>프로젝트</span>
+                  <span className={`${styles.recordValue} num`}>{counts?.projects ?? 0}건</span>
+                  <Icon name="chevronRight" size={16} className={styles.recordChevron} />
+                </Link>
+              </li>
+            </ul>
+          </Card>
         </div>
+
+        <Card
+          title="최근 지원"
+          padding="none"
+          action={
+            <Link to="/app/applications" className={styles.moreLink}>
+              전체 보기
+              <Icon name="chevronRight" size={14} />
+            </Link>
+          }
+        >
+          {recentApplications.length > 0 ? (
+            <Table caption="최근 지원 내역">
+              <thead>
+                <tr>
+                  <th scope="col">회사</th>
+                  <th scope="col">포지션</th>
+                  <th scope="col">단계</th>
+                  <th scope="col" className={styles.dateCol}>
+                    지원일
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentApplications.map((application) => (
+                  <tr key={application.id}>
+                    <td className={styles.company}>{application.companyName}</td>
+                    <td>{application.position}</td>
+                    <td>
+                      <Badge status={application.status} />
+                    </td>
+                    <td className={`${styles.dateCol} num`}>
+                      {formatDate(application.appliedAt ?? application.createdAt)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          ) : (
+            <EmptyState compact icon="inbox" message="아직 등록된 지원 내역이 없습니다." />
+          )}
+        </Card>
       </PageState>
     </div>
   );

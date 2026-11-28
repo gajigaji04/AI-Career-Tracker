@@ -2,6 +2,9 @@ import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { resetPassword } from "../api/auth";
 import AuthLayout from "../components/layouts/AuthLayout";
+import Button from "../components/common/Button";
+import Icon from "../components/common/Icon";
+import PasswordInput from "../components/common/PasswordInput";
 import styles from "./LoginPage.module.css";
 
 export default function ResetPasswordPage() {
@@ -45,6 +48,10 @@ export default function ResetPasswordPage() {
             <h1 className={styles.title}>잘못된 접근입니다</h1>
             <p className={styles.subtitle}>재설정 링크가 유효하지 않습니다.</p>
           </div>
+          <p className={styles.error} role="alert">
+            <Icon name="alertCircle" size={16} />
+            메일로 받은 링크를 다시 열거나, 비밀번호 찾기를 다시 요청해주세요.
+          </p>
           <p className={styles.footer}>
             <Link to="/forgot-password" className={styles.link}>
               비밀번호 찾기 다시 요청하기
@@ -70,35 +77,39 @@ export default function ResetPasswordPage() {
           }}
           className={styles.form}
         >
-          <div className={styles.field}>
-            <label className={styles.label}>새 비밀번호</label>
-            <input
-              type="password"
-              placeholder="8자 이상"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={styles.input}
-              required
-            />
-          </div>
+          <PasswordInput
+            large
+            label="새 비밀번호"
+            icon="lock"
+            autoComplete="new-password"
+            placeholder="8자 이상"
+            hint="8자 이상, 영문과 숫자를 섞으면 더 안전합니다."
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
 
-          <div className={styles.field}>
-            <label className={styles.label}>새 비밀번호 확인</label>
-            <input
-              type="password"
-              placeholder="비밀번호 재입력"
-              value={passwordConfirm}
-              onChange={(e) => setPasswordConfirm(e.target.value)}
-              className={styles.input}
-              required
-            />
-          </div>
+          <PasswordInput
+            large
+            label="새 비밀번호 확인"
+            icon="lock"
+            autoComplete="new-password"
+            placeholder="비밀번호 재입력"
+            value={passwordConfirm}
+            onChange={(e) => setPasswordConfirm(e.target.value)}
+            required
+          />
 
-          {error && <p className={styles.error}>{error}</p>}
+          {error && (
+            <p className={styles.error} role="alert">
+              <Icon name="alertCircle" size={16} />
+              {error}
+            </p>
+          )}
 
-          <button type="submit" className={styles.button} disabled={isLoading}>
-            {isLoading ? <span className={styles.spinner} /> : "비밀번호 재설정"}
-          </button>
+          <Button type="submit" fullWidth loading={isLoading} className={styles.submit}>
+            비밀번호 재설정
+          </Button>
         </form>
 
         <p className={styles.footer}>

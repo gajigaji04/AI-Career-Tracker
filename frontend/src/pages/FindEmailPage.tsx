@@ -2,9 +2,18 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { requestFindEmail, verifyFindEmail } from "../api/auth";
 import AuthLayout from "../components/layouts/AuthLayout";
+import Button from "../components/common/Button";
+import Icon from "../components/common/Icon";
+import Input from "../components/common/Input";
 import styles from "./LoginPage.module.css";
 
 type Step = "phone" | "code" | "result";
+
+const STEPS: { key: Step; label: string }[] = [
+  { key: "phone", label: "휴대폰 번호" },
+  { key: "code", label: "인증번호 확인" },
+  { key: "result", label: "이메일 확인" },
+];
 
 export default function FindEmailPage() {
   const [step, setStep] = useState<Step>("phone");
@@ -41,6 +50,8 @@ export default function FindEmailPage() {
     }
   };
 
+  const currentIndex = STEPS.findIndex((s) => s.key === step);
+
   return (
     <AuthLayout>
       <div className={styles.card}>
@@ -53,6 +64,22 @@ export default function FindEmailPage() {
           </p>
         </div>
 
+        {/* 진행 단계 표시 */}
+        <ol className={styles.steps} aria-label="진행 단계">
+          {STEPS.map((s, i) => (
+            <li
+              key={s.key}
+              className={`${styles.stepItem} ${i <= currentIndex ? styles.stepDone : ""}`}
+              aria-current={i === currentIndex ? "step" : undefined}
+            >
+              <span className={`${styles.stepDot} num`}>
+                {i < currentIndex ? <Icon name="check" size={12} strokeWidth={2.5} /> : i + 1}
+              </span>
+              {s.label}
+            </li>
+          ))}
+        </ol>
+
         {step === "phone" && (
           <form
             noValidate
@@ -62,23 +89,29 @@ export default function FindEmailPage() {
             }}
             className={styles.form}
           >
-            <div className={styles.field}>
-              <label className={styles.label}>휴대폰 번호</label>
-              <input
-                type="tel"
-                placeholder="01012345678"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className={styles.input}
-                required
-              />
-            </div>
+            <Input
+              large
+              label="휴대폰 번호"
+              type="tel"
+              icon="phone"
+              autoComplete="tel"
+              inputMode="numeric"
+              placeholder="01012345678"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required
+            />
 
-            {error && <p className={styles.error}>{error}</p>}
+            {error && (
+              <p className={styles.error} role="alert">
+                <Icon name="alertCircle" size={16} />
+                {error}
+              </p>
+            )}
 
-            <button type="submit" className={styles.button} disabled={isLoading}>
-              {isLoading ? <span className={styles.spinner} /> : "인증번호 받기"}
-            </button>
+            <Button type="submit" fullWidth loading={isLoading} className={styles.submit}>
+              인증번호 받기
+            </Button>
           </form>
         )}
 
@@ -91,35 +124,42 @@ export default function FindEmailPage() {
             }}
             className={styles.form}
           >
-            <p className={styles.success}>
+            <p className={styles.success} role="status">
+              <Icon name="checkCircle" size={16} />
               {phone}(으)로 인증번호를 발송했습니다. (5분 이내 입력)
             </p>
 
-            <div className={styles.field}>
-              <label className={styles.label}>인증번호</label>
-              <input
-                type="text"
-                placeholder="6자리 숫자"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                className={styles.input}
-                maxLength={6}
-                required
-              />
-            </div>
+            <Input
+              large
+              label="인증번호"
+              type="text"
+              autoComplete="one-time-code"
+              inputMode="numeric"
+              placeholder="6자리 숫자"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              maxLength={6}
+              required
+            />
 
-            {error && <p className={styles.error}>{error}</p>}
+            {error && (
+              <p className={styles.error} role="alert">
+                <Icon name="alertCircle" size={16} />
+                {error}
+              </p>
+            )}
 
-            <button type="submit" className={styles.button} disabled={isLoading}>
-              {isLoading ? <span className={styles.spinner} /> : "확인"}
-            </button>
+            <Button type="submit" fullWidth loading={isLoading} className={styles.submit}>
+              확인
+            </Button>
           </form>
         )}
 
         {step === "result" && (
-          <p className={styles.success}>
-            회원님의 이메일은 <strong>{email}</strong> 입니다.
-          </p>
+          <div className={styles.result} role="status">
+            <span className={styles.resultLabel}>가입된 이메일</span>
+            <strong className={styles.resultValue}>{email}</strong>
+          </div>
         )}
 
         <p className={styles.footer}>

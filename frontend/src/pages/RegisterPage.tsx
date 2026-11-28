@@ -7,7 +7,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { register as registerUser } from "../api/auth";
 import type { ExperienceLevel } from "../types/auth";
 import AuthLayout from "../components/layouts/AuthLayout";
+import Button from "../components/common/Button";
+import Icon from "../components/common/Icon";
+import Input from "../components/common/Input";
+import PasswordInput from "../components/common/PasswordInput";
 import SearchableCombobox from "../components/common/SearchableCombobox";
+import Select from "../components/common/Select";
 import styles from "./RegisterPage.module.css";
 
 const EXPERIENCE_LEVELS: { value: ExperienceLevel; label: string }[] = [
@@ -101,6 +106,13 @@ const getPasswordStrength = (password: string): PasswordStrength => {
   return { score: 3, label: "강함" };
 };
 
+/** 화면 안내용. 필수 규칙은 registerSchema(8자 이상)이고 나머지는 권장 */
+const PASSWORD_GUIDES: { label: string; test: (pw: string) => boolean; required?: boolean }[] = [
+  { label: "8자 이상", test: (pw) => pw.length >= 8, required: true },
+  { label: "영문 포함", test: (pw) => /[a-zA-Z]/.test(pw) },
+  { label: "숫자 포함", test: (pw) => /[0-9]/.test(pw) },
+];
+
 export default function RegisterPage() {
   const navigate = useNavigate();
   const [submitError, setSubmitError] = useState("");
@@ -171,32 +183,35 @@ export default function RegisterPage() {
           onSubmit={(e) => void handleSubmit(onSubmit)(e)}
           className={styles.form}
         >
-          <div className={styles.field}>
-            <label className={styles.label}>이메일</label>
-            <input
+          {/* ── 1. 계정 정보 ── */}
+          <fieldset className={styles.section}>
+            <legend className={styles.sectionTitle}>
+              <span className={`${styles.sectionStep} num`}>1</span>
+              계정 정보
+            </legend>
+
+            <Input
+              label="이메일"
               type="email"
+              icon="mail"
+              autoComplete="email"
               placeholder="example@email.com"
-              className={styles.input}
+              error={errors.email?.message}
               {...register("email")}
             />
-            {errors.email && <p className={styles.fieldError}>{errors.email.message}</p>}
-          </div>
 
-          <div className={styles.row}>
             <div className={styles.field}>
-              <label className={styles.label}>비밀번호</label>
-              <input
-                type="password"
+              <PasswordInput
+                label="비밀번호"
+                icon="lock"
+                autoComplete="new-password"
                 placeholder="8자 이상"
-                className={styles.input}
+                error={errors.password?.message}
                 {...register("password")}
               />
-              {errors.password && (
-                <p className={styles.fieldError}>{errors.password.message}</p>
-              )}
               {password && (
                 <div className={styles.strengthMeter}>
-                  <div className={styles.strengthBars}>
+                  <div className={styles.strengthBars} aria-hidden="true">
                     {[1, 2, 3].map((level) => (
                       <span
                         key={level}
@@ -206,162 +221,197 @@ export default function RegisterPage() {
                       />
                     ))}
                   </div>
-                  <span className={styles.strengthLabel}>{strength.label}</span>
+                  <span className={styles.strengthLabel}>보안 강도 {strength.label}</span>
                 </div>
               )}
+              <ul className={styles.guides} aria-label="비밀번호 안내">
+                {PASSWORD_GUIDES.map((guide) => {
+                  const met = guide.test(password);
+                  return (
+                    <li key={guide.label} className={`${styles.guide} ${met ? styles.guideMet : ""}`}>
+                      <Icon name={met ? "checkCircle" : "info"} size={14} />
+                      {guide.label}
+                      {!guide.required && <span className={styles.guideOptional}>(권장)</span>}
+                      <span className="sr-only">{met ? " 충족" : " 미충족"}</span>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
 
-            <div className={styles.field}>
-              <label className={styles.label}>비밀번호 확인</label>
-              <input
-                type="password"
-                placeholder="비밀번호 재입력"
-                className={styles.input}
-                {...register("passwordConfirm")}
-              />
-              {errors.passwordConfirm && (
-                <p className={styles.fieldError}>{errors.passwordConfirm.message}</p>
-              )}
-            </div>
-          </div>
-          <p className={styles.passwordHint}>영문/숫자 포함 8자 이상을 권장합니다.</p>
+            <PasswordInput
+              label="비밀번호 확인"
+              icon="lock"
+              autoComplete="new-password"
+              placeholder="비밀번호 재입력"
+              error={errors.passwordConfirm?.message}
+              {...register("passwordConfirm")}
+            />
+          </fieldset>
 
-          <div className={styles.row}>
-            <div className={styles.field}>
-              <label className={styles.label}>이름</label>
-              <input
-                type="text"
+          {/* ── 2. 기본 정보 ── */}
+          <fieldset className={styles.section}>
+            <legend className={styles.sectionTitle}>
+              <span className={`${styles.sectionStep} num`}>2</span>
+              기본 정보
+            </legend>
+
+            <div className={styles.row}>
+              <Input
+                label="이름"
+                autoComplete="name"
                 placeholder="홍길동"
-                className={styles.input}
+                error={errors.name?.message}
                 {...register("name")}
               />
-              {errors.name && <p className={styles.fieldError}>{errors.name.message}</p>}
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.label}>닉네임</label>
-              <input
-                type="text"
+              <Input
+                label="닉네임"
+                autoComplete="nickname"
                 placeholder="다른 사용자에게 보일 이름"
-                className={styles.input}
+                error={errors.nickname?.message}
                 {...register("nickname")}
               />
-              {errors.nickname && (
-                <p className={styles.fieldError}>{errors.nickname.message}</p>
-              )}
             </div>
-          </div>
 
-          <div className={styles.field}>
-            <label className={styles.label}>휴대폰 번호 (선택)</label>
-            <input
+            <Input
+              label="휴대폰 번호"
+              labelHint="선택"
               type="tel"
+              icon="phone"
+              autoComplete="tel"
+              inputMode="numeric"
               placeholder="01012345678"
-              className={styles.input}
+              error={errors.phone?.message}
+              hint="등록해두면 이메일(아이디)을 잊었을 때 문자 인증으로 찾을 수 있습니다."
               {...register("phone")}
             />
-            {errors.phone && <p className={styles.fieldError}>{errors.phone.message}</p>}
-            <p className={styles.passwordHint}>
-              등록해두면 이메일(아이디)을 잊었을 때 문자로 인증 후 찾을 수 있습니다.
-            </p>
-          </div>
+          </fieldset>
 
-          <div className={styles.divider}>
-            <span>선택 정보</span>
-          </div>
+          {/* ── 3. 커리어 정보 (선택) ── */}
+          <fieldset className={styles.section}>
+            <legend className={styles.sectionTitle}>
+              <span className={`${styles.sectionStep} num`}>3</span>
+              커리어 정보
+              <span className={styles.sectionOptional}>선택</span>
+            </legend>
+            <p className={styles.sectionDesc}>지금 건너뛰고 나중에 입력해도 됩니다.</p>
 
-          <div className={styles.field}>
-            <label className={styles.label}>현재/희망 직무</label>
-            <Controller
-              control={control}
-              name="jobTitle"
-              render={({ field }) => (
-                <SearchableCombobox
-                  options={JOB_TITLE_OPTIONS}
-                  value={field.value ?? ""}
-                  onChange={field.onChange}
-                  placeholder="검색하거나 직접 입력하세요"
-                />
-              )}
-            />
-          </div>
-
-          <div className={styles.row}>
             <div className={styles.field}>
-              <label className={styles.label}>경력 수준</label>
+              <label htmlFor="register-job-title" className={styles.label}>
+                현재/희망 직무
+              </label>
               <Controller
                 control={control}
-                name="experienceLevel"
+                name="jobTitle"
                 render={({ field }) => (
-                  <select {...field} className={styles.select}>
-                    <option value="">선택 안 함</option>
-                    {EXPERIENCE_LEVELS.map((level) => (
-                      <option key={level.value} value={level.value}>
-                        {level.label}
-                      </option>
-                    ))}
-                  </select>
+                  <SearchableCombobox
+                    id="register-job-title"
+                    options={JOB_TITLE_OPTIONS}
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                    placeholder="검색하거나 직접 입력하세요"
+                  />
                 )}
               />
             </div>
 
-            {YEARS_INPUT_LEVELS.includes(experienceLevel as ExperienceLevel) && (
-              <div className={styles.field}>
-                <label className={styles.label}>경력 연차</label>
-                <input
+            <div className={styles.row}>
+              <Controller
+                control={control}
+                name="experienceLevel"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    value={field.value ?? ""}
+                    label="경력 수준"
+                    placeholder="선택 안 함"
+                    options={EXPERIENCE_LEVELS}
+                  />
+                )}
+              />
+
+              {YEARS_INPUT_LEVELS.includes(experienceLevel as ExperienceLevel) && (
+                <Input
+                  label="경력 연차"
                   type="number"
                   min={0}
                   max={60}
                   placeholder="예: 3"
-                  className={styles.input}
                   {...register("yearsOfExperience")}
                 />
-              </div>
-            )}
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.label}>관심 기술 스택</label>
-            <input
-              type="text"
-              placeholder="기술 스택 검색 (예: react)"
-              className={styles.input}
-              value={stackFilter}
-              onChange={(e) => setStackFilter(e.target.value)}
-            />
-            {selectedStack.length > 0 && (
-              <p className={styles.stackSelectedHint}>
-                선택됨: {selectedStack.join(", ")}
-              </p>
-            )}
-            <div className={styles.chipGroup}>
-              {visibleStackOptions.map((stack) => (
-                <button
-                  key={stack}
-                  type="button"
-                  onClick={() => toggleStack(stack)}
-                  className={`${styles.chip} ${
-                    selectedStack.includes(stack) ? styles.chipActive : ""
-                  }`}
-                >
-                  {stack}
-                </button>
-              ))}
-              {visibleStackOptions.length === 0 && (
-                <span className={styles.noResults}>검색 결과가 없습니다.</span>
               )}
             </div>
-          </div>
 
-          {submitError && <p className={styles.error}>{submitError}</p>}
+            <div className={styles.field}>
+              <Input
+                label="관심 기술 스택"
+                icon="search"
+                placeholder="기술 스택 검색 (예: react)"
+                value={stackFilter}
+                onChange={(e) => setStackFilter(e.target.value)}
+              />
 
-          <button type="submit" className={styles.button} disabled={isSubmitting}>
-            {isSubmitting ? <span className={styles.spinner} /> : "회원가입"}
-          </button>
+              {selectedStack.length > 0 && (
+                <div className={styles.selected}>
+                  <span className={`${styles.selectedCount} num`}>{selectedStack.length}개 선택</span>
+                  <ul className={styles.selectedList}>
+                    {selectedStack.map((stack) => (
+                      <li key={stack}>
+                        <button
+                          type="button"
+                          className={styles.selectedChip}
+                          onClick={() => toggleStack(stack)}
+                          aria-label={`${stack} 선택 해제`}
+                        >
+                          {stack}
+                          <Icon name="close" size={12} strokeWidth={2.25} />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div className={styles.chipGroup}>
+                {visibleStackOptions.map((stack) => {
+                  const active = selectedStack.includes(stack);
+                  return (
+                    <button
+                      key={stack}
+                      type="button"
+                      onClick={() => toggleStack(stack)}
+                      aria-pressed={active}
+                      className={`${styles.chip} ${active ? styles.chipActive : ""}`}
+                    >
+                      {active && <Icon name="check" size={12} strokeWidth={2.5} />}
+                      {stack}
+                    </button>
+                  );
+                })}
+                {visibleStackOptions.length === 0 && (
+                  <span className={styles.noResults}>검색 결과가 없습니다.</span>
+                )}
+              </div>
+            </div>
+          </fieldset>
+
+          {submitError && (
+            <p className={styles.error} role="alert">
+              <Icon name="alertCircle" size={16} />
+              {submitError}
+            </p>
+          )}
+
+          <Button type="submit" fullWidth loading={isSubmitting} className={styles.submit}>
+            회원가입
+          </Button>
         </form>
 
         <p className={styles.footer}>
-          이미 계정이 있으신가요? <Link to="/login" className={styles.link}>로그인</Link>
+          이미 계정이 있으신가요?{" "}
+          <Link to="/login" className={styles.link}>
+            로그인
+          </Link>
         </p>
       </div>
     </AuthLayout>

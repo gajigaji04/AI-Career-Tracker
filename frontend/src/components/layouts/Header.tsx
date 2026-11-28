@@ -1,35 +1,31 @@
-import { useNavigate } from "react-router-dom";
-import { useMe } from "../../hooks/useMe";
-import { logout } from "../../api/auth";
+import Icon from "../common/Icon";
 import styles from "./Header.module.css";
 
 type HeaderProps = {
+  isMenuOpen: boolean;
   onMenuClick: () => void;
 };
 
-export default function Header({ onMenuClick }: HeaderProps) {
-  const { data } = useMe();
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await logout();
-    navigate("/login");
-  };
-
+/** 모바일(≤768px) 전용 상단바. 데스크톱에서는 사이드바가 로고·계정을 맡는다. */
+export default function Header({ isMenuOpen, onMenuClick }: HeaderProps) {
   return (
     <header className={styles.header}>
-      <button className={styles.menuBtn} onClick={onMenuClick} aria-label="메뉴 열기">
-        ☰
+      <button
+        type="button"
+        className={styles.menuBtn}
+        onClick={onMenuClick}
+        aria-label="메뉴 열기"
+        aria-controls="app-sidebar"
+        aria-expanded={isMenuOpen}
+      >
+        <Icon name="menu" size={20} />
       </button>
-      <div className={styles.user}>
-        <span className={styles.avatar} aria-hidden="true">
-          {data?.data?.name?.trim().charAt(0) ?? "?"}
+      <span className={styles.logo}>
+        <span className={styles.logoMark} aria-hidden="true">
+          <Icon name="target" size={14} strokeWidth={2} />
         </span>
-        <span className={styles.name}>{data?.data?.name}</span>
-      </div>
-      <button className={styles.logoutBtn} onClick={handleLogout}>
-        로그아웃
-      </button>
+        CareerHub
+      </span>
     </header>
   );
 }

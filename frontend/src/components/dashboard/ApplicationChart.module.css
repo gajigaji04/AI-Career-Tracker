@@ -1,13 +1,104 @@
-.wrapper {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 24px 28px;
+.chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
 }
 
-.title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-h);
-  margin: 0 0 20px;
+.stack {
+  display: flex;
+  gap: 2px;
+  height: 10px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-muted);
+}
+
+.segment {
+  flex-basis: 0;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+}
+
+.swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.barCell {
+  display: grid;
+  grid-template-columns: 1fr 88px;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-muted);
+}
+
+.bar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-full);
+  transform-origin: left center;
+  transition: transform 0.4s var(--ease-out);
+}
+
+.count {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-strong);
+  text-align: right;
+}
+
+.percent {
+  font-weight: var(--weight-regular);
+  color: var(--color-text-muted);
+}
+
+/* 단계 색: Badge 와 같은 계열 */
+.APPLIED {
+  background: var(--gray-400);
+}
+
+.DOCUMENT_PASS {
+  background: var(--color-primary);
+}
+
+.INTERVIEW {
+  background: var(--color-warning);
+}
+
+.FINAL_PASS {
+  background: var(--color-success);
+}
+
+.REJECTED {
+  background: var(--color-danger);
 }

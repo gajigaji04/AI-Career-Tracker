@@ -6,6 +6,8 @@ type SearchableComboboxProps = {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  /** 바깥 <label htmlFor> 와 연결할 때 */
+  id?: string;
 };
 
 export default function SearchableCombobox({
@@ -13,6 +15,7 @@ export default function SearchableCombobox({
   value,
   onChange,
   placeholder,
+  id,
 }: SearchableComboboxProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -23,8 +26,10 @@ export default function SearchableCombobox({
   return (
     <div className={styles.wrapper}>
       <input
+        id={id}
         type="text"
         role="combobox"
+        aria-autocomplete="list"
         aria-expanded={isOpen}
         placeholder={placeholder}
         value={value}

@@ -29,8 +29,8 @@ export default function ProcessSection() {
         {STEPS.map((item, index) => (
           <div key={item.step} className={styles.step}>
             <div className={styles.stepHeader}>
-              <span className={styles.stepNumber}>{item.step}</span>
-              {index < STEPS.length - 1 && <span className={styles.connector} />}
+              <span className={`${styles.stepNumber} num`}>{item.step}</span>
+              {index < STEPS.length - 1 && <span className={styles.connector} aria-hidden="true" />}
             </div>
             <h3 className={styles.stepTitle}>{item.title}</h3>
             <p className={styles.stepDesc}>{item.description}</p>

@@ -2,6 +2,9 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { forgotPassword } from "../api/auth";
 import AuthLayout from "../components/layouts/AuthLayout";
+import Button from "../components/common/Button";
+import Icon from "../components/common/Icon";
+import Input from "../components/common/Input";
 import styles from "./LoginPage.module.css";
 
 export default function ForgotPasswordPage() {
@@ -30,7 +33,8 @@ export default function ForgotPasswordPage() {
         </div>
 
         {submitted ? (
-          <p className={styles.success}>
+          <p className={styles.success} role="status">
+            <Icon name="mail" size={16} />
             입력하신 이메일이 가입되어 있다면, 재설정 링크를 발송했습니다. 메일함을 확인해주세요. (1시간 동안 유효)
           </p>
         ) : (
@@ -42,21 +46,21 @@ export default function ForgotPasswordPage() {
             }}
             className={styles.form}
           >
-            <div className={styles.field}>
-              <label className={styles.label}>이메일</label>
-              <input
-                type="email"
-                placeholder="example@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={styles.input}
-                required
-              />
-            </div>
+            <Input
+              large
+              label="이메일"
+              type="email"
+              icon="mail"
+              autoComplete="email"
+              placeholder="example@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
 
-            <button type="submit" className={styles.button} disabled={isLoading}>
-              {isLoading ? <span className={styles.spinner} /> : "재설정 링크 받기"}
-            </button>
+            <Button type="submit" fullWidth loading={isLoading} className={styles.submit}>
+              재설정 링크 받기
+            </Button>
           </form>
         )}
 

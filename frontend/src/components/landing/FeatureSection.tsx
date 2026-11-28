@@ -1,23 +1,25 @@
+import Icon from "../common/Icon";
+import type { IconName } from "../common/Icon";
 import styles from "./FeatureSection.module.css";
 
 const FEATURES = [
   {
-    icon: "✨",
+    icon: "sparkles" as IconName,
     title: "AI 분석",
     description: "지원 내역과 프로젝트를 바탕으로 자기소개서 초안과 예상 면접 질문을 생성합니다.",
   },
   {
-    icon: "📚",
+    icon: "book" as IconName,
     title: "학습 기록 관리",
     description: "매일의 학습 내용과 시간을 기록하고, 카테고리별로 성장 과정을 돌아볼 수 있습니다.",
   },
   {
-    icon: "🗂️",
+    icon: "folder" as IconName,
     title: "프로젝트 관리",
     description: "기술 스택과 링크를 포함한 프로젝트 이력을 정리하고 자기소개서 소재로 바로 연결합니다.",
   },
   {
-    icon: "📈",
+    icon: "briefcase" as IconName,
     title: "지원 현황 관리",
     description: "지원한 회사와 전형 단계를 한눈에 추적하고, 통계 대시보드로 진행 상황을 확인합니다.",
   },
@@ -35,7 +37,9 @@ export default function FeatureSection() {
         <div className={styles.grid}>
           {FEATURES.map((feature) => (
             <div key={feature.title} className={styles.card}>
-              <span className={styles.icon}>{feature.icon}</span>
+              <span className={styles.icon} aria-hidden="true">
+                <Icon name={feature.icon} size={20} />
+              </span>
               <h3 className={styles.cardTitle}>{feature.title}</h3>
               <p className={styles.cardDesc}>{feature.description}</p>
             </div>

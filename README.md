@@ -67,6 +67,7 @@
 - 학습 기록 CRUD (제목, 내용, 카테고리, 학습 시간, 학습 날짜)
 - 프로젝트 CRUD (제목, 설명, 기술 스택, GitHub/배포 링크)
 - 지원 현황 CRUD (회사명, 포지션, 진행 상태 5단계, 메모)
+- 지원 현황 표 / 칸반 보기 전환, 회사명·포지션·메모 검색, 전형 단계 필터 (단계별 건수 표시)
 
 ### 이력서 관리
 
@@ -82,12 +83,15 @@
 
 ### 대시보드
 
-- 학습 기록 / 프로젝트 / 지원 현황 통계 카드
-- 지원 상태별 분포 차트 (Recharts)
+- 전체 지원 / 진행 중 / 면접 단계 / 최종 합격 지표 카드
+- 전형 단계별 분포 (차트 라이브러리 없이 CSS 막대로 구현)
+- 학습 기록 · 프로젝트 건수, 최근 지원 5건
 
 ---
 
 ## 서비스 화면
+
+> 로컬 개발 환경에서 예시 계정·예시 데이터로 촬영한 화면입니다.
 
 ### 랜딩 / 인증
 
@@ -101,15 +105,28 @@
 | --- | --- | --- |
 | ![대시보드](./docs/images/dashboard.png) | ![학습 기록](./docs/images/studies.png) | ![프로젝트](./docs/images/projects.png) |
 
-| 지원 현황 | AI 도우미 | 이력서 관리 |
+| 지원 현황 (표 보기) | 지원 현황 (칸반 보기) | AI 도우미 |
 | --- | --- | --- |
-| ![지원 현황](./docs/images/applications.png) | ![AI 도우미](./docs/images/ai.png) | ![이력서 관리](./docs/images/resume.png) |
+| ![지원 현황 표 보기](./docs/images/applications.png) | ![지원 현황 칸반 보기](./docs/images/applications-board.png) | ![AI 도우미](./docs/images/ai.png) |
 
-### 성공 / 실패 피드백 (Toast), 모바일
-
-| 성공 Toast | 실패 Toast | 모바일 (375px) |
+| 이력서 관리 | 성공 Toast | 실패 Toast |
 | --- | --- | --- |
-| ![성공 토스트](./docs/images/toast-success.png) | ![실패 토스트](./docs/images/toast-error.png) | ![모바일](./docs/images/mobile.png) |
+| ![이력서 관리](./docs/images/resume.png) | ![성공 토스트](./docs/images/toast-success.png) | ![실패 토스트](./docs/images/toast-error.png) |
+
+### 모바일 (390px)
+
+| 대시보드 | 메뉴 (서랍) |
+| --- | --- |
+| <img src="./docs/images/mobile.png" alt="모바일 대시보드" width="280" /> | <img src="./docs/images/mobile-menu.png" alt="모바일 메뉴" width="280" /> |
+
+### 디자인 시스템
+
+- **디자인 토큰:** 색·간격·모서리·그림자·글자 크기를 `src/index.css` 의 CSS 변수로 정의하고, 모듈 CSS 는 변수만 참조 (라이트 모드 전용)
+- **폰트:** Pretendard Variable 을 유니코드 범위별 분할 파일(dynamic subset)로 불러와 화면에 쓰인 글자 조각만 내려받음, `font-display: swap`
+- **아이콘:** 외부 라이브러리 없이 공통 `Icon` 컴포넌트(라인 SVG)로 통일
+- **공통 컴포넌트:** Button · Input · PasswordInput · Select · Badge · Card · Table · Modal · PageHeader · EmptyState · PageState · SegmentedControl · Toast
+- **상태 화면:** 로딩 / 오류(다시 시도) / 빈 데이터(다음 행동 버튼)를 모든 목록 화면에 적용
+- **접근성:** 라벨-입력 연결, 키보드 포커스 링, 아이콘 버튼 `aria-label`, `prefers-reduced-motion` 대응, 숫자 지표 `tabular-nums`
 
 ---
 
@@ -123,8 +140,8 @@
 | 라우팅 | React Router (Data Router) |
 | 서버 상태 관리 | TanStack Query (React Query) |
 | 폼 / 검증 | React Hook Form, Zod |
-| 스타일링 | CSS Modules |
-| 차트 | Recharts |
+| 스타일링 | CSS Modules, CSS 변수 디자인 토큰 |
+| 폰트 / 아이콘 | Pretendard, 자체 SVG 아이콘 컴포넌트 |
 | 빌드 도구 | Vite |
 
 ### Backend
