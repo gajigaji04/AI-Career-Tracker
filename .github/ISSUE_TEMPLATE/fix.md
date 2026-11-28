@@ -1,7 +1,7 @@
 ---
-name: 버그
+name: Fix
 about: 동작이 잘못되거나 에러가 발생할 때
-title: "[Bug] "
+title: "[Fix] "
 labels: bug
 ---
 

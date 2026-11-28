@@ -1,6 +1,6 @@
 ---
-name: 기능
-about: 새 기능 또는 기존 기능 개선
+name: Feat
+about: 새 기능 추가 또는 기존 기능 개선
 title: "[Feat] "
 labels: enhancement
 ---
@@ -11,7 +11,7 @@ labels: enhancement
 
 ## 요구사항
 
-<!-- 사용자 관점의 동작. 화면·API 형태가 정해졌다면 함께 -->
+<!-- 사용자 관점의 동작. 화면·API 형태가 정해졌다면 함께 (디자인 시안 링크 포함) -->
 
 -
 
