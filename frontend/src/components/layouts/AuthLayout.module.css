@@ -6,6 +6,11 @@
 
 /* ── 좌측 브랜드 패널: 단색 네이비, 장식 최소 ── */
 .brandPanel {
+  /* 회원가입처럼 긴 폼을 스크롤해도 브랜드 패널은 화면에 고정 */
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100svh;
   display: flex;
   align-items: center;
   justify-content: center;
