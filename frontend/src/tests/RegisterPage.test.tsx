@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import RegisterPage from "../pages/RegisterPage";
@@ -117,5 +117,50 @@ describe("RegisterPage - 유효성 검증", () => {
       await screen.findByText("이미 사용 중인 이메일이거나 요청 처리 중 오류가 발생했습니다."),
     ).toBeInTheDocument();
     expect(mockNavigate).not.toHaveBeenCalled();
+  });
+});
+
+describe("RegisterPage - 입력 도움 UI", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it("비밀번호 안내 체크리스트가 입력에 따라 충족 여부를 표시한다", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    const guides = screen.getByRole("list", { name: "비밀번호 안내" });
+    expect(within(guides).getByText("8자 이상").closest("li")).toHaveTextContent("미충족");
+
+    await user.type(screen.getByPlaceholderText("8자 이상"), "abcdefgh");
+
+    const items = within(guides).getAllByRole("listitem");
+    expect(items[0]).toHaveTextContent("충족"); // 8자 이상
+    expect(items[0]).not.toHaveTextContent("미충족");
+    expect(items[1]).not.toHaveTextContent("미충족"); // 영문 포함
+    expect(items[2]).toHaveTextContent("미충족"); // 숫자 포함
+  });
+
+  it("관심 기술 스택을 고르면 선택 목록에 보이고, × 로 해제하며, 가입 요청에 담긴다", async () => {
+    vi.mocked(authApi.register).mockResolvedValue({ success: true, data: {} });
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole("button", { name: "React" }));
+    await user.click(screen.getByRole("button", { name: "Docker" }));
+    expect(screen.getByText("2개 선택")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "React" })).toHaveAttribute("aria-pressed", "true");
+
+    await user.click(screen.getByRole("button", { name: "Docker 선택 해제" }));
+    expect(screen.getByText("1개 선택")).toBeInTheDocument();
+
+    await fillValidForm(user);
+    await user.click(screen.getByRole("button", { name: "회원가입" }));
+
+    await waitFor(() =>
+      expect(authApi.register).toHaveBeenCalledWith(
+        expect.objectContaining({ interestedStack: ["React"] }),
+      ),
+    );
   });
 });
