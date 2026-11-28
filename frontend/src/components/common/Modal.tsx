@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from "react";
+import Icon from "./Icon";
 import styles from "./Modal.module.css";
 
 type ModalProps = {
@@ -74,11 +75,11 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
               {title}
             </h2>
           )}
-          <button className={styles.closeBtn} onClick={onClose} aria-label="닫기">
-            ✕
+          <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="닫기">
+            <Icon name="close" size={18} />
           </button>
         </div>
-        {children}
+        <div className={styles.body}>{children}</div>
       </div>
     </div>
   );

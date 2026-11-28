@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import Icon from "./Icon";
 import styles from "./Toast.module.css";
 
 type ToastType = "success" | "error";
@@ -40,7 +41,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             key={t.id}
             className={`${styles.toast} ${t.type === "error" ? styles.error : styles.success}`}
           >
-            {t.message}
+            <Icon
+              name={t.type === "error" ? "alertCircle" : "checkCircle"}
+              size={18}
+              className={styles.icon}
+            />
+            <span>{t.message}</span>
           </div>
         ))}
       </div>
