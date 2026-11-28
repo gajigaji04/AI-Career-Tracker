@@ -1,45 +1,73 @@
 .card {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  transition: box-shadow 0.15s;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+  transition:
+    border-color var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease;
 }
 
 .card:hover {
-  box-shadow: var(--shadow);
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-sm);
 }
 
-.title {
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--text-h);
-  margin: 0;
-}
-
-.meta {
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.desc {
-  font-size: 14px;
-  color: var(--text);
-  line-height: 1.6;
-  margin: 4px 0 0;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: var(--control-height-sm);
 }
 
 .actions {
   display: flex;
-  gap: 8px;
+  gap: 2px;
+  margin-right: calc(var(--space-2) * -1);
+}
+
+.deleteBtn:hover:not(:disabled) {
+  background: var(--color-danger-subtle);
+  color: var(--color-danger);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  letter-spacing: normal;
+  color: var(--color-text-strong);
+}
+
+.desc {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
   margin-top: auto;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
 }

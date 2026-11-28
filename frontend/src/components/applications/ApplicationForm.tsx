@@ -5,15 +5,13 @@ import Input from "../common/Input";
 import Select from "../common/Select";
 import Button from "../common/Button";
 import type { ApplicationStatus } from "../../api/application";
+import { APPLICATION_STATUSES, APPLICATION_STATUS_LABEL } from "../../constants/application";
 import styles from "./ApplicationForm.module.css";
 
-const STATUS_OPTIONS: { value: ApplicationStatus; label: string }[] = [
-  { value: "APPLIED", label: "지원" },
-  { value: "DOCUMENT_PASS", label: "서류통과" },
-  { value: "INTERVIEW", label: "면접" },
-  { value: "FINAL_PASS", label: "최종합격" },
-  { value: "REJECTED", label: "불합격" },
-];
+const STATUS_OPTIONS = APPLICATION_STATUSES.map((value) => ({
+  value,
+  label: APPLICATION_STATUS_LABEL[value],
+}));
 
 const applicationSchema = z.object({
   companyName: z.string().min(1, "회사명을 입력해주세요."),
@@ -59,18 +57,18 @@ export default function ApplicationForm({
       <div className={styles.row}>
         <Input
           label="회사명"
-          placeholder="회사명"
+          placeholder="회사명을 입력하세요"
           error={errors.companyName?.message}
           {...register("companyName")}
         />
         <Input
           label="포지션"
-          placeholder="포지션"
+          placeholder="예: 프론트엔드 개발자"
           error={errors.position?.message}
           {...register("position")}
         />
       </div>
-      <Select label="상태" options={STATUS_OPTIONS} {...register("status")} />
+      <Select label="전형 단계" options={STATUS_OPTIONS} {...register("status")} />
       <Input
         label="메모"
         placeholder="메모 (선택)"

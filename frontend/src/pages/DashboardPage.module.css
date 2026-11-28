@@ -1,133 +1,110 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: 32px;
-}
-
-.greeting {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.name {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text-h);
-  letter-spacing: -0.5px;
-  margin: 0;
-}
-
-.email {
-  font-size: 14px;
-  color: var(--text);
 }
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
 }
 
 .grid {
   display: grid;
-  grid-template-columns: 1.6fr 1fr;
-  gap: 16px;
-  align-items: start;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
 
-  @media (max-width: 1024px) {
+.records {
+  margin: 0;
+  padding: var(--space-2);
+  list-style: none;
+}
+
+.recordLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: background-color var(--duration-fast) ease;
+}
+
+.recordLink:hover {
+  background: var(--color-surface-subtle);
+}
+
+.recordIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+}
+
+.recordLabel {
+  flex: 1;
+  font-weight: var(--weight-medium);
+  color: var(--color-text-strong);
+}
+
+.recordValue {
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-strong);
+}
+
+.recordChevron {
+  color: var(--color-text-subtle);
+}
+
+.moreLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.moreLink:hover {
+  text-decoration: underline;
+}
+
+.company {
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-strong);
+}
+
+.dateCol {
+  text-align: right;
+  white-space: nowrap;
+  color: var(--color-text-muted);
+}
+
+th.dateCol {
+  text-align: right;
+}
+
+@media (max-width: 1024px) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grid {
     grid-template-columns: 1fr;
   }
 }
 
-.chartEmpty {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 24px 28px;
-}
-
-.recentCard {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 24px 28px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.cardTitle {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-h);
-  margin: 0;
-}
-
-.recentHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.recentLink {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--accent);
-  text-decoration: none;
-}
-
-.recentLink:hover {
-  text-decoration: underline;
-}
-
-.recentList {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.recentItem {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.recentItem:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.recentItemText {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.recentCompany {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-h);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.recentPosition {
-  font-size: 12.5px;
-  color: var(--text-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+@media (max-width: 480px) {
+  .stats {
+    gap: var(--space-3);
+  }
 }

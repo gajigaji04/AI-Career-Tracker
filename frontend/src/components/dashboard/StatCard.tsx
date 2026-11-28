@@ -1,24 +1,42 @@
+import Icon from "../common/Icon";
+import type { IconName } from "../common/Icon";
 import styles from "./StatCard.module.css";
 
-type StatCardTone = "violet" | "blue" | "green";
+type StatCardTone = "primary" | "warning" | "success" | "neutral";
 
 type StatCardProps = {
   label: string;
   value: number;
-  icon?: string;
+  icon?: IconName;
   tone?: StatCardTone;
+  /** 값 아래 보조 설명 */
   hint?: string;
+  unit?: string;
 };
 
-export default function StatCard({ label, value, icon, tone = "violet", hint }: StatCardProps) {
+export default function StatCard({
+  label,
+  value,
+  icon,
+  tone = "neutral",
+  hint,
+  unit = "건",
+}: StatCardProps) {
   return (
-    <div className={`${styles.card} ${styles[tone]}`}>
+    <div className={styles.card}>
       <div className={styles.headerRow}>
         <p className={styles.label}>{label}</p>
-        {icon && <span className={styles.icon}>{icon}</span>}
+        {icon && (
+          <span className={`${styles.icon} ${styles[tone]}`}>
+            <Icon name={icon} size={16} />
+          </span>
+        )}
       </div>
-      <span className={styles.value}>{value}</span>
-      {hint && <span className={styles.hint}>{hint}</span>}
+      <p className={styles.valueRow}>
+        <span className={`${styles.value} num`}>{value.toLocaleString("ko-KR")}</span>
+        <span className={styles.unit}>{unit}</span>
+      </p>
+      {hint && <p className={styles.hint}>{hint}</p>}
     </div>
   );
 }

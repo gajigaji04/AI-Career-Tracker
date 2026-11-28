@@ -1,43 +1,51 @@
-import Badge from "../common/Badge";
 import Button from "../common/Button";
-import type { ApplicationStatus } from "../../api/application";
+import Icon from "../common/Icon";
+import { formatDate } from "../../constants/application";
+import type { ApplicationItem } from "../../constants/application";
 import styles from "./ApplicationCard.module.css";
 
-type Application = {
-  id: string;
-  companyName: string;
-  position: string;
-  status: ApplicationStatus;
-  memo?: string;
-};
-
 type ApplicationCardProps = {
-  application: Application;
-  onEdit: (application: Application) => void;
+  application: ApplicationItem;
+  onEdit: (application: ApplicationItem) => void;
   onDelete: (id: string) => void;
 };
 
-export default function ApplicationCard({
-  application,
-  onEdit,
-  onDelete,
-}: ApplicationCardProps) {
+/** 칸반 보기의 지원 카드. 단계는 열이 나타내므로 배지를 따로 두지 않는다. */
+export default function ApplicationCard({ application, onEdit, onDelete }: ApplicationCardProps) {
+  const label = `${application.companyName} ${application.position}`;
+
   return (
-    <div className={styles.card}>
-      <div className={styles.header}>
+    <article className={styles.card}>
+      <div className={styles.body}>
         <h3 className={styles.company}>{application.companyName}</h3>
-        <Badge status={application.status} />
+        <p className={styles.position}>{application.position}</p>
+        {application.memo && <p className={styles.memo}>{application.memo}</p>}
       </div>
-      <span className={styles.position}>{application.position}</span>
-      {application.memo && <p className={styles.memo}>{application.memo}</p>}
-      <div className={styles.actions}>
-        <Button variant="secondary" onClick={() => onEdit(application)}>
-          수정
-        </Button>
-        <Button variant="danger" onClick={() => onDelete(application.id)}>
-          삭제
-        </Button>
+      <div className={styles.footer}>
+        <span className={`${styles.date} num`}>
+          <Icon name="calendar" size={13} />
+          {formatDate(application.appliedAt ?? application.createdAt)}
+        </span>
+        <div className={styles.actions}>
+          <Button
+            variant="ghost"
+            size="sm"
+            icon="edit"
+            aria-label={`${label} 수정`}
+            title="수정"
+            onClick={() => onEdit(application)}
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            icon="trash"
+            aria-label={`${label} 삭제`}
+            title="삭제"
+            className={styles.deleteBtn}
+            onClick={() => onDelete(application.id)}
+          />
+        </div>
       </div>
-    </div>
+    </article>
   );
 }
