@@ -104,6 +104,17 @@
   border-color: var(--color-danger);
 }
 
-.danger:focus-visible {
+.dangerSolid {
+  background: var(--color-danger);
+  color: var(--color-text-inverse);
+  box-shadow: var(--shadow-xs);
+}
+
+.dangerSolid:hover:not(:disabled) {
+  background: var(--color-danger-hover);
+}
+
+.danger:focus-visible,
+.dangerSolid:focus-visible {
   box-shadow: var(--focus-ring-danger);
 }

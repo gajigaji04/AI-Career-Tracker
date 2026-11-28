@@ -10,6 +10,7 @@ import ProjectCard from "../components/projects/ProjectCard";
 import Modal from "../components/common/Modal";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
+import ConfirmDialog from "../components/common/ConfirmDialog";
 import EmptyState from "../components/common/EmptyState";
 import PageHeader from "../components/common/PageHeader";
 import PageState from "../components/common/PageState";
@@ -24,6 +25,7 @@ export default function ProjectsPage() {
 
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [deletingProject, setDeletingProject] = useState<Project | null>(null);
 
   const projects: Project[] = data?.data ?? [];
 
@@ -64,7 +66,7 @@ export default function ProjectsPage() {
                 key={project.id}
                 project={project}
                 onEdit={setEditingProject}
-                onDelete={(id) => deleteProject.mutate(id)}
+                onDelete={(id) => setDeletingProject(projects.find((p) => p.id === id) ?? null)}
               />
             ))}
           </div>
@@ -85,6 +87,24 @@ export default function ProjectsPage() {
           onCancel={() => setIsAddOpen(false)}
         />
       </Modal>
+
+      <ConfirmDialog
+        isOpen={!!deletingProject}
+        title="프로젝트 삭제"
+        message={
+          deletingProject && (
+            <>
+              <strong>{deletingProject.title}</strong> 프로젝트를 삭제할까요?
+            </>
+          )
+        }
+        loading={deleteProject.isPending}
+        onClose={() => setDeletingProject(null)}
+        onConfirm={() => {
+          if (!deletingProject) return;
+          deleteProject.mutate(deletingProject.id, { onSettled: () => setDeletingProject(null) });
+        }}
+      />
 
       <Modal
         isOpen={!!editingProject}

@@ -10,6 +10,7 @@ import StudyCard from "../components/studies/StudyCard";
 import Modal from "../components/common/Modal";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
+import ConfirmDialog from "../components/common/ConfirmDialog";
 import EmptyState from "../components/common/EmptyState";
 import PageHeader from "../components/common/PageHeader";
 import PageState from "../components/common/PageState";
@@ -33,6 +34,7 @@ export default function StudiesPage() {
 
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingStudy, setEditingStudy] = useState<Study | null>(null);
+  const [deletingStudy, setDeletingStudy] = useState<Study | null>(null);
 
   const studies: Study[] = data?.data ?? [];
   const totalMinutes = studies.reduce((sum, s) => sum + s.studyTime, 0);
@@ -74,7 +76,7 @@ export default function StudiesPage() {
                 key={study.id}
                 study={study}
                 onEdit={setEditingStudy}
-                onDelete={(id) => deleteStudy.mutate(id)}
+                onDelete={(id) => setDeletingStudy(studies.find((s) => s.id === id) ?? null)}
               />
             ))}
           </div>
@@ -92,6 +94,24 @@ export default function StudiesPage() {
           onCancel={() => setIsAddOpen(false)}
         />
       </Modal>
+
+      <ConfirmDialog
+        isOpen={!!deletingStudy}
+        title="학습 기록 삭제"
+        message={
+          deletingStudy && (
+            <>
+              <strong>{deletingStudy.title}</strong> 기록을 삭제할까요?
+            </>
+          )
+        }
+        loading={deleteStudy.isPending}
+        onClose={() => setDeletingStudy(null)}
+        onConfirm={() => {
+          if (!deletingStudy) return;
+          deleteStudy.mutate(deletingStudy.id, { onSettled: () => setDeletingStudy(null) });
+        }}
+      />
 
       <Modal
         isOpen={!!editingStudy}

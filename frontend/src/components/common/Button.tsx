@@ -4,7 +4,7 @@ import type { IconName } from "./Icon";
 import Spinner from "./Spinner";
 import styles from "./Button.module.css";
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "dangerSolid";
 type ButtonSize = "sm" | "md";
 
 type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "type"> & {

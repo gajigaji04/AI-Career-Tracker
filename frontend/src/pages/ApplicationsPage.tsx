@@ -10,6 +10,7 @@ import ApplicationCard from "../components/applications/ApplicationCard";
 import Badge from "../components/common/Badge";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
+import ConfirmDialog from "../components/common/ConfirmDialog";
 import EmptyState from "../components/common/EmptyState";
 import Input from "../components/common/Input";
 import Modal from "../components/common/Modal";
@@ -48,6 +49,7 @@ export default function ApplicationsPage() {
 
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingApp, setEditingApp] = useState<ApplicationItem | null>(null);
+  const [deletingApp, setDeletingApp] = useState<ApplicationItem | null>(null);
   const [view, setView] = useState<ViewMode>(readViewMode);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
@@ -94,7 +96,9 @@ export default function ApplicationsPage() {
   };
 
   const handleEdit = (app: ApplicationItem) => setEditingApp(app);
-  const handleDelete = (id: string) => deleteApplication.mutate(id);
+  // 삭제는 확인창에서 한 번 더 확인한 뒤 실행
+  const handleDelete = (id: string) =>
+    setDeletingApp(applications.find((a) => a.id === id) ?? null);
 
   const renderTable = () => (
     <Card padding="none">
@@ -307,6 +311,27 @@ export default function ApplicationsPage() {
           onCancel={() => setIsAddOpen(false)}
         />
       </Modal>
+
+      <ConfirmDialog
+        isOpen={!!deletingApp}
+        title="지원 내역 삭제"
+        message={
+          deletingApp && (
+            <>
+              <strong>
+                {deletingApp.companyName} · {deletingApp.position}
+              </strong>{" "}
+              지원 내역을 삭제할까요? 이 지원으로 생성한 AI 기록도 함께 삭제됩니다.
+            </>
+          )
+        }
+        loading={deleteApplication.isPending}
+        onClose={() => setDeletingApp(null)}
+        onConfirm={() => {
+          if (!deletingApp) return;
+          deleteApplication.mutate(deletingApp.id, { onSettled: () => setDeletingApp(null) });
+        }}
+      />
 
       <Modal isOpen={!!editingApp} onClose={() => setEditingApp(null)} title="지원 내역 수정">
         {editingApp && (

@@ -3,6 +3,7 @@ import { useResumes, useUploadResume, useDeleteResume } from "../hooks/useResume
 import Badge from "../components/common/Badge";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
+import ConfirmDialog from "../components/common/ConfirmDialog";
 import EmptyState from "../components/common/EmptyState";
 import Icon from "../components/common/Icon";
 import PageHeader from "../components/common/PageHeader";
@@ -18,6 +19,7 @@ export default function ResumePage() {
   const deleteResume = useDeleteResume();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [deletingResume, setDeletingResume] = useState<Resume | null>(null);
 
   const resumes: Resume[] = data?.data ?? [];
   const latestVersion = resumes.reduce((max, r) => Math.max(max, r.version), 0);
@@ -162,7 +164,7 @@ export default function ResumePage() {
                           aria-label={`${resume.fileName} v${resume.version} 삭제`}
                           title="삭제"
                           className={styles.deleteBtn}
-                          onClick={() => deleteResume.mutate(resume.id)}
+                          onClick={() => setDeletingResume(resume)}
                         />
                       </div>
                     </td>
@@ -173,6 +175,27 @@ export default function ResumePage() {
           )}
         </Card>
       </PageState>
+
+      <ConfirmDialog
+        isOpen={!!deletingResume}
+        title="이력서 삭제"
+        message={
+          deletingResume && (
+            <>
+              <strong>
+                v{deletingResume.version} {deletingResume.fileName}
+              </strong>{" "}
+              파일을 삭제할까요?
+            </>
+          )
+        }
+        loading={deleteResume.isPending}
+        onClose={() => setDeletingResume(null)}
+        onConfirm={() => {
+          if (!deletingResume) return;
+          deleteResume.mutate(deletingResume.id, { onSettled: () => setDeletingResume(null) });
+        }}
+      />
     </div>
   );
 }
