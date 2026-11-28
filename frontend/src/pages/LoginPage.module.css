@@ -24,6 +24,9 @@
 
 .success,
 .error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
   margin: 0;
   padding: var(--space-3);
   border: 1px solid;
@@ -80,6 +83,42 @@
 
 .forgotLink:hover {
   text-decoration: underline;
+}
+
+.success svg,
+.error svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* 로그인: 비밀번호 아래 보조 링크 */
+.helperLinks {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: calc(var(--space-2) * -1);
+}
+
+.helperLinks .forgotLink {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.helperLinks .forgotLink:hover {
+  color: var(--color-primary);
+}
+
+.helperDivider {
+  width: 1px;
+  height: 12px;
+  background: var(--color-border-strong);
+}
+
+/* 공통 Button 을 인증 화면 크기로 (Button 모듈 CSS 보다 우선하도록 한 단계 높임) */
+.form .submit {
+  height: 44px;
+  font-size: var(--text-md);
 }
 
 .input {

@@ -10,6 +10,12 @@
   color: var(--color-text-strong);
 }
 
+.labelHint {
+  margin-left: 6px;
+  font-weight: var(--weight-regular);
+  color: var(--color-text-subtle);
+}
+
 .control {
   position: relative;
   display: flex;
@@ -39,8 +45,24 @@
     box-shadow var(--duration-fast) ease;
 }
 
+.large {
+  height: 44px;
+  font-size: var(--text-md);
+}
+
 .withIcon {
   padding-left: 36px;
+}
+
+.withTrailing {
+  padding-right: 44px;
+}
+
+.trailing {
+  position: absolute;
+  right: 4px;
+  display: flex;
+  align-items: center;
 }
 
 .input::placeholder {
